@@ -1,5 +1,6 @@
 {
   "expo": {
+
     "name": "coding-and-programming",
     "slug": "coding-and-programming",
     "version": "1.0.0",
@@ -9,7 +10,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.codingandprogramming.financetracker"
     },
     "android": {
       "adaptiveIcon": {
