@@ -1,14 +1,16 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Image, Platform } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
+import { Collapsible } from '@/components/Collapsible';
+import { ExternalLink } from '@/components/ExternalLink';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function HomeScreen() {
+export default function TabTwoScreen() {
   return (
     <ThemedView style={styles.backgroundContainer}>
-            
+                
     </ThemedView>
   );
 }
@@ -18,20 +20,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#003D5B',
   },
+  headerImage: {
+    color: '#808080',
+    bottom: -90,
+    left: -35,
+    position: 'absolute',
+  },
   titleContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 });
