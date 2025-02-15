@@ -1,12 +1,38 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, TextInput, FlatList, TouchableOpacity, Switch, StyleSheet, Modal } from "react-native";
 import { List, IconButton } from 'react-native-paper';
 // import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from "@react-native-picker/picker";
+import { Dropdown } from 'react-native-element-dropdown';
+// import EmojiSelector, { Categories } from 'react-native-emoji-selector';
+// import EmojiPicker, {emojiFromUtf16} from 'rn-emoji-picker';
+// import {emojis} from "rn-emoji-picker/dist/data";
+// import { Emoji } from "rn-emoji-picker/dist/interfaces";
+import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
 
 export default function TransactionsScreen() {
+  const months = [
+    {label: 'January', value: '1'},
+    {label: 'February', value: '2'},
+    {label: 'March', value: '3'},
+    {label: 'April', value: '4'},
+    {label: 'May', value: '5'},
+    {label: 'June', value: '6'},
+    {label: 'July', value: '7'},
+    {label: 'August', value: '8'},
+    {label: 'September', value: '9'},
+    {label: 'October', value: '10'},
+    {label: 'November', value: '11'},
+    {label: 'December', value: '12'},
+  ]
+
+  const gainOrLoss = [
+    {label: 'Gain', value: '1'},
+    {label: 'Loss', value: '-1'}
+  ]
   type TransactionEntry = {
     id: string;
+    icon: string;
     title: string;
     date: string;
     amount: string;
@@ -15,15 +41,16 @@ export default function TransactionsScreen() {
   };
   
   const [oneTime, setOneTime] = useState([
-    { id: "1", title: "Ordered Food", date: "12/09/2024", amount: "-15", description: ""},
-    { id: "2", title: "Bought Clothes", date: "12/07/2024", amount: "-30", description: ""},
-    { id: "3", title: "Found Money on Ground", date: "12/06/2024", amount: "5", description: ""},
-    { id: "4", title: "idk at this point", date: "12/06/2024", amount: "5", description: ""},
+    { id: "1", icon: "🍚", title: "Ordered Food", date: "12/09/2024", amount: "-15", description: ""},
+    { id: "2", icon: "👚", title: "Bought Clothes", date: "12/07/2024", amount: "-30", description: ""},
+    { id: "3", icon: "💸", title: "Found Money on Ground", date: "12/06/2024", amount: "5", description: ""},
+    { id: "4", icon: "💸", title: "idk at this point", date: "12/06/2024", amount: "5", description: ""},
   ]);
 
   const addRow = () => {
     const newRow = {
       id: Date.now().toString(),
+      icon: "💸",
       title: "New Item",
       date: "MM/DD/YYYY",
       amount: "0.00",
@@ -36,9 +63,10 @@ export default function TransactionsScreen() {
   const addOneTime = () => {
     const newRow = {
       id: Date.now().toString(),
+      icon: oneTimeIcon,
       title: oneTimeTitle,
       date: `${oneTimeMonth}/${oneTimeDay}/${oneTimeYear}`,
-      amount: oneTimeAmount,
+      amount: oneTimeSign * (parseFloat(oneTimeAmount) || 0) + "",
       description: oneTimeDescription,
     };
     setOneTime([...oneTime, newRow]);
@@ -60,20 +88,32 @@ export default function TransactionsScreen() {
     setIsMenuOpen((prev) => !prev);
   };
 
+  const [isOneTimeEmojiOpen, setIsOneTimeEmojiOpen] = useState(false);
+
+  const [oneTimeIcon, setOneTimeIcon] = useState('');
   const [oneTimeTitle, setOneTimeTitle] = useState('');
+  const [oneTimeSign, setOneTimeSign] = useState(1);
   const [oneTimeAmount, setOneTimeAmount] = useState('');
   // const [oneTimeDate, setOneTimeDate] = useState('');
   // const [oneTimeDate, setOneTimeDate] = useState(new Date());
   const [oneTimeDay, setOneTimeDay] = useState('');
-  const [oneTimeMonth, setOneTimeMonth] = useState('');
+  const [oneTimeMonth, setOneTimeMonth] = useState(null);
   const [oneTimeYear, setOneTimeYear] = useState('');
   const [oneTimeDescription, setOneTimeDescription] = useState('');
+
+  const handleOneTimeIcon = (emojiObject: EmojiType) => {
+    setOneTimeIcon(emojiObject.emoji);
+  }
 
   const handleOneTimeTitle = (title: string) => {
     setOneTimeTitle(title);
   }
 
-  const handleOneTimeAmount = (amount: any) => {
+  const handleOneTimeSign = (sign : number) => {
+    setOneTimeSign(sign);
+  }
+
+  const handleOneTimeAmount = (amount: string) => {
     setOneTimeAmount(amount);
   }
 
@@ -81,9 +121,21 @@ export default function TransactionsScreen() {
     setOneTimeDay(day);
   }
 
-  const handleOneTimeMonth = (month: any) => {
-    setOneTimeMonth(month);
-  }
+  // const handleOneTimeMonth = (month: any) => {
+  //   setOneTimeMonth(month);
+  // }
+  // const [oneTimeMonthFocus, setOneTimeMonthFocus] = useState(false);
+
+  // const renderLabel = () => {
+  //   if (oneTimeMonth || oneTimeMonthFocus){
+  //     return(
+  //       <Text style={oneTimeMonthFocus && {color: 'blue'}}>
+  //         Dropdown Label
+  //       </Text>
+  //     )
+  //   }
+  //   return null;
+  // }
 
   const handleOneTimeYear = (year: any) => {
     setOneTimeYear(year);
@@ -101,7 +153,8 @@ export default function TransactionsScreen() {
   const renderItem = ({ item }: { item: TransactionEntry }) => (
  
     <View style={styles.item}>
-      <List.Icon icon="cash" color="black" />
+      {/* <List.Icon icon="cash" color="black" /> */}
+      <Text style={{fontSize: 30}}>{item.icon}</Text>
       <View style={styles.textContainer}>
         <TextInput
           style={styles.title}
@@ -182,47 +235,97 @@ export default function TransactionsScreen() {
           <View style={styles.modalContent}>
             {/* <Text style={styles.modalTitle}>Modal Title</Text> */}
             <View style={styles.modalBody}>
-              <Text style={styles.modalTitle}>
-                Transaction Title
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Icon
+              </Text>
+              <View style={{marginBottom: 20}}>
+                  {/* <EmojiSelector onEmojiSelected={handleOneTimeIcon}/> */}
+                  <TouchableOpacity style={[styles.textBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsOneTimeEmojiOpen(true)}>
+                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{oneTimeIcon}</Text>
+                  </TouchableOpacity>
+                  <EmojiPicker 
+                    onEmojiSelected={handleOneTimeIcon}
+                    open={isOneTimeEmojiOpen}
+                    onClose={() => setIsOneTimeEmojiOpen(false)}
+                  />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Title
               </Text>
               <TextInput
-                style={[styles.textBox, {marginBottom: 20}]}
+                style={[styles.textBox, {width: 300, height: 50, marginBottom: 20}]}
                 placeholder="Title"
-                placeholderTextColor='#0c5ac4'
+                placeholderTextColor='#3c5a80'
                 value={oneTimeTitle}
                 onChangeText={handleOneTimeTitle}
               />
-              <Text style={styles.modalTitle}>
-                Transaction Amount
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Transaction
               </Text>
               <View style={{flexDirection: 'row', alignContent: 'center'}}>
-                <Text style={{fontSize: 20, color: '#fff', padding: 10, textAlign: 'center'}}>$</Text>
-                <TextInput
-                  style={[styles.textBox, {marginBottom: 20}]}
-                  placeholder="X.XX"
-                  placeholderTextColor='#0c5ac4'
-                  value={oneTimeAmount}
-                  onChangeText={handleOneTimeAmount}
-                  keyboardType="numeric"
-                />
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Classify Transaction</Text>
+                  <Dropdown
+                    style={[styles.textBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={gainOrLoss}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={oneTimeSign}
+                    onChange={handleOneTimeSign}
+                  />
+                </View>
+                <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Amount</Text>
+                  <TextInput
+                    style={[styles.textBox, {width: 175, height: 50, marginBottom: 20}]}
+                    placeholder="X.XX"
+                    placeholderTextColor='#3c5a80'
+                    value={oneTimeAmount}
+                    onChangeText={handleOneTimeAmount}
+                    keyboardType="numeric"
+                  />
+                </View>
               </View>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Date of Transaction
               </Text>
-              <View style={{flexDirection: 'row'}}>
-                <Text>Day: </Text>
-                <TextInput
-                  style={[styles.textBox, {marginBottom: 20}]}
-                  placeholder="Day"
-                  placeholderTextColor='#0c5ac4'
-                  value={oneTimeDay}
-                  onChangeText={handleOneTimeDay}
-                  keyboardType="numeric"
-                />
-                <Text>Month: </Text>
-                <Picker
+              <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                <Text style={[styles.modalTitle, {fontSize: 12}]}>Date: </Text>
+                  <TextInput
+                    style={[styles.textBox, {width: 60, height: 50}]}
+                    placeholder="Date"
+                    placeholderTextColor='#3c5a80'
+                    value={oneTimeDay}
+                    onChangeText={handleOneTimeDay}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Month: </Text>
+                  <Dropdown
+                    style={[styles.textBox, {height: 50, width: 150}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={months}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Month"
+                    value={oneTimeMonth}
+                    onChange={(item: { value: React.SetStateAction<null>; }) => {
+                      setOneTimeMonth(item.value);
+                    }}
+                  />
+                </View>
+                {/* <Picker
                   selectedValue={oneTimeMonth}
-                  onValueChange={(value) => handleOneTimeMonth(value)}
+                  onValueChange={(itemValue, itemIndex) => setOneTimeMonth(itemValue)}
                   >
                     <Picker.Item label="January" value="1"/>
                     <Picker.Item label="February" value="2"/>
@@ -236,30 +339,37 @@ export default function TransactionsScreen() {
                     <Picker.Item label="October" value="10"/>
                     <Picker.Item label="November" value="11"/>
                     <Picker.Item label="December" value="12"/>
-                  </Picker>
-                  <Text>Year: </Text>
-                  <TextInput
-                    style={[styles.textBox, {marginBottom: 20}]}
-                    placeholder="Year"
-                    placeholderTextColor='#0c5ac4'
-                    value={oneTimeYear}
-                    onChangeText={handleOneTimeYear}
-                    keyboardType="numeric"
-                  />
+                  </Picker> */}
+                  <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                    <Text style={[styles.modalTitle, {fontSize: 12}]}>Year: </Text>
+                    <TextInput
+                      style={[styles.textBox, {width: 100, height: 50}]}
+                      placeholder="Year"
+                      placeholderTextColor='#3c5a80'
+                      value={oneTimeYear}
+                      onChangeText={handleOneTimeYear}
+                      keyboardType="numeric"
+                    />
+                  </View>
               </View>
-              <Text style={styles.modalTitle}>
-                Transaction Description
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Description
               </Text>
               <TextInput
-                style={[styles.bigTextBox, {marginBottom: 20}]}
+                style={[styles.textBox, {width: 300, height: 200, marginBottom: 20}]}
                 placeholder="Description"
-                placeholderTextColor='#0c5ac4'
+                placeholderTextColor='#3c5a80'
                 multiline={true}
                 value={oneTimeDescription}
                 onChangeText={handleOneTimeDescription}
               />
             </View>
             <View style={styles.modalBottom}>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleOneTimeModal}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
+                  </View>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.closeButton} onPress={handleOneTimeAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text><Text style={styles.closeButtonText}>Add</Text>
@@ -304,26 +414,11 @@ const styles = StyleSheet.create({
   },
 
   textBox: {
-    width: 300,
-    height: 50,
     borderWidth: 1,
-    borderColor: "#093f87",
+    borderColor: "#3c5a80",
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#022554',
-    color: '#fff',
-  },
-
-  bigTextBox: {
-    width: 300,
-    height: 200,
-    borderWidth: 1,
-    textAlignVertical: 'top',
-    borderColor: "#093f87",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingTop: 10,
-    backgroundColor: '#022554',
+    backgroundColor: '#2b415c',
     color: '#fff',
   },
 
@@ -433,10 +528,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    width: '90%',
-    height: '90%',
+    width: '95%',
+    height: 800,
     padding: 20,
-    backgroundColor: '#021937',
+    backgroundColor: '#1F2F43',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -447,7 +542,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 6,
     color: '#fff',
@@ -459,7 +553,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalBottom:{
-    
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
+    width: '100%',
   },
   closeButton: {
     backgroundColor: '#00FF11',
@@ -473,4 +570,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
   },
+  cancelButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    borderColor: '#ab0000',
+    borderWidth: 2,
+    paddingTop: 5,
+    paddingBottom: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderRadius: 5,
+  },
+  cancelButtonText: {
+    color: '#ab0000',
+    fontSize: 20,
+  }
 });
