@@ -13,7 +13,7 @@ import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
 export default function TransactionsScreen() {
   function Balance(){
     let sum = 0;
-    for (let item of oneTime){
+    for (let item of singular){
       sum += parseFloat(item.amount);
     }
     return sum;
@@ -52,7 +52,7 @@ export default function TransactionsScreen() {
     setIsNewTransactionMenuOpen((prev) => !prev);
   };
 
-  type OneTimeTransactionEntry = {
+  type SingularTransactionEntry = {
     id: string;
     icon: string;
     title: string;
@@ -61,7 +61,7 @@ export default function TransactionsScreen() {
     description: string;
   };
   
-  const [oneTime, setOneTime] = useState([
+  const [singular, setSingular] = useState([
     { id: "1", icon: "🍚", title: "Ordered Food", date: "12/09/2024", amount: "-15", description: ""},
     { id: "2", icon: "👚", title: "Bought Clothes", date: "12/07/2024", amount: "-30", description: ""},
     { id: "3", icon: "💸", title: "Found Money on Ground", date: "12/06/2024", amount: "5", description: ""},
@@ -77,95 +77,95 @@ export default function TransactionsScreen() {
       amount: "0.00",
       description: "",
     };
-    setOneTime([...oneTime, newRow]);
+    setSingular([...singular, newRow]);
   };
 
-  const addOneTime = () => {
+  const addSingular = () => {
     const newRow = {
       id: Date.now().toString(),
-      icon: oneTimeIcon,
-      title: oneTimeTitle,
-      date: `${oneTimeMonth}/${oneTimeDay}/${oneTimeYear}`,
-      amount: oneTimeSign * (parseFloat(oneTimeAmount) || 0) + "",
-      description: oneTimeDescription,
+      icon: singularIcon,
+      title: singularTitle,
+      date: `${singularMonth}/${singularDay}/${singularYear}`,
+      amount: singularSign * (parseFloat(singularAmount) || 0) + "",
+      description: singularDescription,
     };
-    setOneTime([...oneTime, newRow]);
+    setSingular([...singular, newRow]);
   }
 
-  const updateOneTimeRow = (id: string, field: string , value: string) => {
-    setOneTime(oneTime.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  const updateSingularRow = (id: string, field: string , value: string) => {
+    setSingular(singular.map(item => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
-  const [oneTimeModal, setOneTimeModal] = useState(false);
+  const [singularModal, setSingularModal] = useState(false);
 
-  const toggleOneTimeModal = () => {
-    setOneTimeModal(!oneTimeModal);
+  const toggleSingularModal = () => {
+    setSingularModal(!singularModal);
   };
 
-  const [isOneTimeEmojiOpen, setIsOneTimeEmojiOpen] = useState(false);
+  const [isSingularEmojiOpen, setIsSingularEmojiOpen] = useState(false);
 
-  const [oneTimeIcon, setOneTimeIcon] = useState('');
-  const [oneTimeTitle, setOneTimeTitle] = useState('');
-  const [oneTimeSign, setOneTimeSign] = useState(1);
-  const [oneTimeAmount, setOneTimeAmount] = useState('');
-  // const [oneTimeDate, setOneTimeDate] = useState('');
-  // const [oneTimeDate, setOneTimeDate] = useState(new Date());
-  const [oneTimeDay, setOneTimeDay] = useState('');
-  const [oneTimeMonth, setOneTimeMonth] = useState(null);
-  const [oneTimeYear, setOneTimeYear] = useState('');
-  const [oneTimeDescription, setOneTimeDescription] = useState('');
+  const [singularIcon, setSingularIcon] = useState('');
+  const [singularTitle, setSingularTitle] = useState('');
+  const [singularSign, setSingularSign] = useState(1);
+  const [singularAmount, setSingularAmount] = useState('');
+  // const [singularDate, setSingularDate] = useState('');
+  // const [singularDate, setSingularDate] = useState(new Date());
+  const [singularDay, setSingularDay] = useState('');
+  const [singularMonth, setSingularMonth] = useState(null);
+  const [singularYear, setSingularYear] = useState('');
+  const [singularDescription, setSingularDescription] = useState('');
 
-  const handleOneTimeIcon = (emojiObject: EmojiType) => {
-    setOneTimeIcon(emojiObject.emoji);
+  const handleSingularIcon = (emojiObject: EmojiType) => {
+    setSingularIcon(emojiObject.emoji);
   }
 
-  const handleOneTimeTitle = (title: string) => {
-    setOneTimeTitle(title);
+  const handleSingularTitle = (title: string) => {
+    setSingularTitle(title);
   }
 
-  const handleOneTimeSign = (sign : any) => {
-    setOneTimeSign(sign.value);
+  const handleSingularSign = (sign : any) => {
+    setSingularSign(sign.value);
   }
 
-  const handleOneTimeAmount = (amount: string) => {
-    setOneTimeAmount(amount);
+  const handleSingularAmount = (amount: string) => {
+    setSingularAmount(amount);
   }
 
-  const handleOneTimeDay = (day: any) => {
-    setOneTimeDay(day);
+  const handleSingularDay = (day: any) => {
+    setSingularDay(day);
   }
 
-  const handleOneTimeYear = (year: any) => {
-    setOneTimeYear(year);
+  const handleSingularYear = (year: any) => {
+    setSingularYear(year);
   }
 
-  const handleOneTimeDescription = (description: string) => {
-    setOneTimeDescription(description);
+  const handleSingularDescription = (description: string) => {
+    setSingularDescription(description);
   }
 
-  const handleOneTimeAdd = () => {
-    addOneTime();
-    toggleOneTimeModal();
+  const handleSingularAdd = () => {
+    addSingular();
+    toggleSingularModal();
   }
  
-  const renderOneTimeItem = ({ item }: { item: OneTimeTransactionEntry }) => (
+  const renderSingularItem = ({ item }: { item: SingularTransactionEntry }) => (
  
-    <View style={styles.oneTimeItem}>
+    <View style={styles.singularItem}>
       {/* <List.Icon icon="cash" color="black" /> */}
       <Text style={{fontSize: 30}}>{item.icon}</Text>
       <View style={styles.textContainer}>
         <Text
-          style={styles.oneTimeTitle}
+          style={styles.singularTitle}
         >{item.title}</Text>
       </View>
       <View style={[styles.transactionInfoContainer, {width: 75}]}>
         <Text
-            style={styles.oneTimeDate}
+            style={styles.singularDate}
           >{item.date}</Text>
       </View>
       <View style={[styles.transactionInfoContainer, {width: 50, paddingLeft: 15}]}>
         <Text
-          style={[styles.oneTimeAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
+          style={[styles.singularAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
         >{item.amount}</Text>
       </View>
       {/* <Switch
@@ -294,17 +294,17 @@ export default function TransactionsScreen() {
         scrollEnabled={false}
         />
 
-        <Text style={styles.header}>One-Time Transactions</Text>
+        <Text style={styles.header}>Singular Transactions</Text>
         <View style={styles.tableRow}>
           <Text style={[styles.columnHeader, {marginLeft: 30}]}>Title</Text>
           <Text style={[styles.columnHeader, {marginLeft: 100}]}>Date</Text>
           <Text style={[styles.columnHeader, {marginLeft: 5}]}>Amount</Text>
         </View>
-          {/* <FlatList data={oneTime.filter(item => !item.periodic)} renderItem={renderItem} keyExtractor={(item) => item.id} /> */}
+          {/* <FlatList data={singular.filter(item => !item.periodic)} renderItem={renderItem} keyExtractor={(item) => item.id} /> */}
         <FlatList
         style={{marginBottom: 70}} 
-        data={oneTime} 
-        renderItem={renderOneTimeItem} 
+        data={singular} 
+        renderItem={renderSingularItem} 
         keyExtractor={(item) => item.id} 
         scrollEnabled={false}/>
       </ScrollView>
@@ -324,10 +324,10 @@ export default function TransactionsScreen() {
             </TouchableOpacity>
         </View>
         <View style={[styles.smallButtonContainer, { bottom: 140 }]}>
-        <View style={styles.labelContainer}><Text style={styles.labelText}>One-Time Transaction</Text></View>
+        <View style={styles.labelContainer}><Text style={styles.labelText}>Singular Transaction</Text></View>
           <TouchableOpacity
             style={styles.smallButton}
-            onPress={toggleOneTimeModal}>
+            onPress={toggleSingularModal}>
             <Text style={styles.smallButtonText}>1</Text>
           </TouchableOpacity>
         </View>
@@ -337,8 +337,8 @@ export default function TransactionsScreen() {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={oneTimeModal}
-        onRequestClose={toggleOneTimeModal}
+        visible={singularModal}
+        onRequestClose={toggleSingularModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -348,14 +348,14 @@ export default function TransactionsScreen() {
                 Icon
               </Text>
               <View style={{marginBottom: 20}}>
-                  {/* <EmojiSelector onEmojiSelected={handleOneTimeIcon}/> */}
-                  <TouchableOpacity style={[styles.textBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsOneTimeEmojiOpen(true)}>
-                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{oneTimeIcon}</Text>
+                  {/* <EmojiSelector onEmojiSelected={handleSingularIcon}/> */}
+                  <TouchableOpacity style={[styles.textBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsSingularEmojiOpen(true)}>
+                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{singularIcon}</Text>
                   </TouchableOpacity>
                   <EmojiPicker 
-                    onEmojiSelected={handleOneTimeIcon}
-                    open={isOneTimeEmojiOpen}
-                    onClose={() => setIsOneTimeEmojiOpen(false)}
+                    onEmojiSelected={handleSingularIcon}
+                    open={isSingularEmojiOpen}
+                    onClose={() => setIsSingularEmojiOpen(false)}
                   />
               </View>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
@@ -365,8 +365,8 @@ export default function TransactionsScreen() {
                 style={[styles.textBox, {width: 300, height: 50, marginBottom: 20}]}
                 placeholder="Title"
                 placeholderTextColor='#3c5a80'
-                value={oneTimeTitle}
-                onChangeText={handleOneTimeTitle}
+                value={singularTitle}
+                onChangeText={handleSingularTitle}
               />
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Transaction
@@ -383,8 +383,8 @@ export default function TransactionsScreen() {
                     labelField="label"
                     valueField="value"
                     placeholder="Select"
-                    value={oneTimeSign}
-                    onChange={handleOneTimeSign}
+                    value={singularSign}
+                    onChange={handleSingularSign}
                   />
                 </View>
                 <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
@@ -394,8 +394,8 @@ export default function TransactionsScreen() {
                     style={[styles.textBox, {width: 175, height: 50, marginBottom: 20}]}
                     placeholder="X.XX"
                     placeholderTextColor='#3c5a80'
-                    value={oneTimeAmount}
-                    onChangeText={handleOneTimeAmount}
+                    value={singularAmount}
+                    onChangeText={handleSingularAmount}
                     keyboardType="numeric"
                   />
                 </View>
@@ -410,8 +410,8 @@ export default function TransactionsScreen() {
                     style={[styles.textBox, {width: 60, height: 50}]}
                     placeholder="Date"
                     placeholderTextColor='#3c5a80'
-                    value={oneTimeDay}
-                    onChangeText={handleOneTimeDay}
+                    value={singularDay}
+                    onChangeText={handleSingularDay}
                     keyboardType="numeric"
                   />
                 </View>
@@ -426,9 +426,9 @@ export default function TransactionsScreen() {
                     labelField="label"
                     valueField="value"
                     placeholder="Select Month"
-                    value={oneTimeMonth}
+                    value={singularMonth}
                     onChange={(item: { value: React.SetStateAction<null>; }) => {
-                      setOneTimeMonth(item.value);
+                      setSingularMonth(item.value);
                     }}
                   />
                 </View>
@@ -438,8 +438,8 @@ export default function TransactionsScreen() {
                       style={[styles.textBox, {width: 100, height: 50}]}
                       placeholder="Year"
                       placeholderTextColor='#3c5a80'
-                      value={oneTimeYear}
-                      onChangeText={handleOneTimeYear}
+                      value={singularYear}
+                      onChangeText={handleSingularYear}
                       keyboardType="numeric"
                     />
                   </View>
@@ -452,17 +452,17 @@ export default function TransactionsScreen() {
                 placeholder="Description"
                 placeholderTextColor='#3c5a80'
                 multiline={true}
-                value={oneTimeDescription}
-                onChangeText={handleOneTimeDescription}
+                value={singularDescription}
+                onChangeText={handleSingularDescription}
               />
             </View>
             <View style={styles.modalBottom}>
-              <TouchableOpacity style={styles.cancelButton} onPress={toggleOneTimeModal}>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularModal}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
                   </View>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={handleOneTimeAdd}>
+              <TouchableOpacity style={styles.closeButton} onPress={handleSingularAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text><Text style={styles.closeButtonText}>Add</Text>
                   </View>
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
-  oneTimeItem: {
+  singularItem: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#2E4769",
@@ -665,17 +665,17 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5
   },
-  oneTimeTitle: {
+  singularTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: '#fff',
     width: 175,
   },
-  oneTimeDate: {
+  singularDate: {
     fontSize: 12,
     color: "#fff",
   },
-  oneTimeAmount: {
+  singularAmount: {
     fontSize: 12,
     fontWeight: "bold",
     marginRight: 10,
