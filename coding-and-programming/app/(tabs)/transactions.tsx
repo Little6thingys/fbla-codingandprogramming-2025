@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TextInput, FlatList, TouchableOpacity, Switch, StyleSheet, Modal } from "react-native";
+import { View, Text, TextInput, FlatList, TouchableOpacity, Switch, StyleSheet, Modal, ScrollView } from "react-native";
 import { List, IconButton } from 'react-native-paper';
 // import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Picker } from "@react-native-picker/picker";
@@ -11,6 +11,19 @@ import { Dropdown } from 'react-native-element-dropdown';
 import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
 
 export default function TransactionsScreen() {
+  function Balance(){
+    let sum = 0;
+    for (let item of oneTime){
+      sum += parseFloat(item.amount);
+    }
+    return sum;
+  }
+  
+  const gainOrLoss = [
+    {label: 'Gain', value: '1'},
+    {label: 'Loss', value: '-1'}
+  ]
+  
   const months = [
     {label: 'January', value: '1'},
     {label: 'February', value: '2'},
@@ -26,18 +39,26 @@ export default function TransactionsScreen() {
     {label: 'December', value: '12'},
   ]
 
-  const gainOrLoss = [
-    {label: 'Gain', value: '1'},
-    {label: 'Loss', value: '-1'}
+  const periodChoices = [
+    {label: 'Day(s)', value: 'day(s)'},
+    {label: 'Week(s)', value: 'week(s)'},
+    {label: 'Month(s)', value: 'month(s)'},
+    {label: 'Year(s)', value: 'month(s)'},
   ]
-  type TransactionEntry = {
+
+  const [isNewTransactionMenuOpen, setIsNewTransactionMenuOpen] = useState(false);
+
+  const toggleNewTransactionMenu = () => {
+    setIsNewTransactionMenuOpen((prev) => !prev);
+  };
+
+  type OneTimeTransactionEntry = {
     id: string;
     icon: string;
     title: string;
     date: string;
     amount: string;
     description: string;
-    // periodic: boolean;
   };
   
   const [oneTime, setOneTime] = useState([
@@ -55,7 +76,6 @@ export default function TransactionsScreen() {
       date: "MM/DD/YYYY",
       amount: "0.00",
       description: "",
-      // periodic: false,
     };
     setOneTime([...oneTime, newRow]);
   };
@@ -72,7 +92,7 @@ export default function TransactionsScreen() {
     setOneTime([...oneTime, newRow]);
   }
 
-  const updateRow = (id: string, field: string , value: string) => {
+  const updateOneTimeRow = (id: string, field: string , value: string) => {
     setOneTime(oneTime.map(item => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
@@ -80,12 +100,6 @@ export default function TransactionsScreen() {
 
   const toggleOneTimeModal = () => {
     setOneTimeModal(!oneTimeModal);
-  };
-
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
   };
 
   const [isOneTimeEmojiOpen, setIsOneTimeEmojiOpen] = useState(false);
@@ -109,8 +123,8 @@ export default function TransactionsScreen() {
     setOneTimeTitle(title);
   }
 
-  const handleOneTimeSign = (sign : number) => {
-    setOneTimeSign(sign);
+  const handleOneTimeSign = (sign : any) => {
+    setOneTimeSign(sign.value);
   }
 
   const handleOneTimeAmount = (amount: string) => {
@@ -120,22 +134,6 @@ export default function TransactionsScreen() {
   const handleOneTimeDay = (day: any) => {
     setOneTimeDay(day);
   }
-
-  // const handleOneTimeMonth = (month: any) => {
-  //   setOneTimeMonth(month);
-  // }
-  // const [oneTimeMonthFocus, setOneTimeMonthFocus] = useState(false);
-
-  // const renderLabel = () => {
-  //   if (oneTimeMonth || oneTimeMonthFocus){
-  //     return(
-  //       <Text style={oneTimeMonthFocus && {color: 'blue'}}>
-  //         Dropdown Label
-  //       </Text>
-  //     )
-  //   }
-  //   return null;
-  // }
 
   const handleOneTimeYear = (year: any) => {
     setOneTimeYear(year);
@@ -150,67 +148,178 @@ export default function TransactionsScreen() {
     toggleOneTimeModal();
   }
  
-  const renderItem = ({ item }: { item: TransactionEntry }) => (
+  const renderOneTimeItem = ({ item }: { item: OneTimeTransactionEntry }) => (
  
-    <View style={styles.item}>
+    <View style={styles.oneTimeItem}>
       {/* <List.Icon icon="cash" color="black" /> */}
       <Text style={{fontSize: 30}}>{item.icon}</Text>
       <View style={styles.textContainer}>
-        <TextInput
-          style={styles.title}
-          value={item.title}
-          onChangeText={(text) => updateRow(item.id, "title", text)}
-        />
+        <Text
+          style={styles.oneTimeTitle}
+        >{item.title}</Text>
       </View>
-      <TextInput
-          style={styles.date}
-          value={item.date}
-          onChangeText={(text) => updateRow(item.id, "date", text)}
-        />
-      <TextInput
-        style={[styles.amount, { color: item.amount.startsWith('-') ? 'red' : 'green' }]}
-        value={item.amount}
-        keyboardType="numeric"
-        onChangeText={(text) => updateRow(item.id, "amount", text)}
-      />
+      <View style={[styles.transactionInfoContainer, {width: 75}]}>
+        <Text
+            style={styles.oneTimeDate}
+          >{item.date}</Text>
+      </View>
+      <View style={[styles.transactionInfoContainer, {width: 50, paddingLeft: 15}]}>
+        <Text
+          style={[styles.oneTimeAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
+        >{item.amount}</Text>
+      </View>
       {/* <Switch
         value={item.periodic}
         onValueChange={(value) => updateRow(item.id, "periodic", value.toString())}
       /> */}
-      <IconButton icon="dots-horizontal" />
+      {/* <IconButton icon="dots-horizontal" /> */}
+    </View>
+  );
+
+  type PeriodicTransactionEntry = {
+    id: string;
+    icon: string;
+    title: string;
+    times: string;
+    frequency: string,
+    amount: string;
+    description: string;
+  };
+
+  const [periodic, setPeriodic] = useState([
+    { id: "1", icon: "💼", title: "Job", times: "1", frequency: "1 week(s)", amount: "500", description: ""},
+    { id: "2", icon: "💸", title: "Mow Lawns", times: "1", frequency: "1 day(s)", amount: "15", description: ""},
+    { id: "3", icon: "🏠", title: "Rent", times: "1", frequency: "1 month(s)", amount: "-1500", description: ""},
+    { id: "4", icon: "📰", title: "NYT Subscription", times: "1", frequency: "4 week(s)", amount: "-25", description: ""},
+  ])
+
+  const addPeriodic = () => {
+    const newRow = {
+      id: Date.now().toString(),
+      icon: periodicIcon,
+      title: periodicTitle,
+      times: periodicTimes,
+      frequency: periodicNumOfPeriods + " " + periodicPeriod,
+      amount: periodicSign * (parseFloat(periodicAmount) || 0) + "",
+      description: periodicDescription,
+    };
+    setPeriodic([...periodic, newRow]);
+  }
+
+  const updatePeriodicRow = (id: string, field: string , value: string) => {
+    setPeriodic(periodic.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  };
+
+  const [periodicModal, setPeriodicModal] = useState(false);
+
+  const togglePeriodicModal = () => {
+    setPeriodicModal(!periodicModal);
+  };
+
+  const [isPeriodicEmojiOpen, setIsPeriodicEmojiOpen] = useState(false);
+
+  const [periodicIcon, setPeriodicIcon] = useState('');
+  const [periodicTitle, setPeriodicTitle] = useState('');
+  const [periodicSign, setPeriodicSign] = useState(1);
+  const [periodicAmount, setPeriodicAmount] = useState('');
+  const [periodicTimes, setPeriodicTimes] = useState('');
+  const [periodicNumOfPeriods, setPeriodicNumOfPeriods] = useState('');
+  const [periodicPeriod, setPeriodicPeriod] = useState(null);
+  const [periodicDescription, setPeriodicDescription] = useState('');
+
+  const handlePeriodicIcon = (emojiObject: EmojiType) => {
+    setPeriodicIcon(emojiObject.emoji);
+  }
+
+  const handlePeriodicTitle = (title: string) => {
+    setPeriodicTitle(title);
+  }
+
+  const handlePeriodicSign = (sign : any) => {
+    setPeriodicSign(sign.value);
+  }
+
+  const handlePeriodicAmount = (amount: string) => {
+    setPeriodicAmount(amount);
+  }
+
+  const handlePeriodicTimes = (times: string) => {
+    setPeriodicTimes(times);
+  }
+
+  const handlePeriodicNumOfPeriods = (num: string) => {
+    setPeriodicNumOfPeriods(num);
+  }
+
+  const handlePeriodicDescription = (description: string) => {
+    setPeriodicDescription(description);
+  }
+
+  const handlePeriodicAdd = () => {
+    addPeriodic();
+    togglePeriodicModal();
+  }
+
+  const renderPeriodicItem = ({item} : { item: PeriodicTransactionEntry}) => (
+    <View style={styles.periodicItem}>
+      {/* <List.Icon icon="cash" color="black" /> */}
+      <Text style={{fontSize: 50}}>{item.icon}</Text>
+        <Text
+          style={[styles.periodicTitle]}
+        >{item.title}</Text>
+      <Text
+        style={[styles.periodicAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
+      >{item.amount}</Text>
+      <Text
+        style={styles.periodicFrequency}
+      >{item.times}x/{item.frequency}</Text>
+      {/* <IconButton icon="dots-horizontal" /> */}
     </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.header}>Periodic Transactions</Text>
-      <FlatList data={oneTime.filter(item => item.periodic)} renderItem={renderItem} keyExtractor={(item) => item.id} /> */}
+      <ScrollView contentContainerStyle={{marginLeft: 10}}>
+        <View style={{flexDirection: 'row', justifyContent: 'center', marginBottom: 20}}>
+          <Text style={styles.pageHeader}>Account Balance: </Text>
+          <Text style={[styles.pageHeader, {fontWeight: 'bold'}]}>${Balance()}</Text>
+        </View>
+        <Text style={styles.header}>Periodic Transactions</Text>
+        <FlatList
+        style={{marginBottom: 20}} 
+        data={periodic} 
+        renderItem={renderPeriodicItem} 
+        keyExtractor={(item) => item.id} 
+        numColumns={2} 
+        scrollEnabled={false}
+        />
 
-      <Text style={styles.header}>One-Time Transactions</Text>
-      <View style={styles.tableRow}>
-        <Text style={styles.columnHeader}>Title</Text>
-        <Text style={styles.columnHeader}>Date</Text>
-        <Text style={styles.columnHeader}>Amount</Text>
-        <Text style={styles.columnHeader}>Periodic</Text>
-      </View>
-        {/* <FlatList data={oneTime.filter(item => !item.periodic)} renderItem={renderItem} keyExtractor={(item) => item.id} /> */}
-        <FlatList data={oneTime} renderItem={renderItem} keyExtractor={(item) => item.id} />
-       
-      <TouchableOpacity onPress={addRow} style={styles.addButton}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+        <Text style={styles.header}>One-Time Transactions</Text>
+        <View style={styles.tableRow}>
+          <Text style={[styles.columnHeader, {marginLeft: 30}]}>Title</Text>
+          <Text style={[styles.columnHeader, {marginLeft: 100}]}>Date</Text>
+          <Text style={[styles.columnHeader, {marginLeft: 5}]}>Amount</Text>
+        </View>
+          {/* <FlatList data={oneTime.filter(item => !item.periodic)} renderItem={renderItem} keyExtractor={(item) => item.id} /> */}
+        <FlatList
+        style={{marginBottom: 70}} 
+        data={oneTime} 
+        renderItem={renderOneTimeItem} 
+        keyExtractor={(item) => item.id} 
+        scrollEnabled={false}/>
+      </ScrollView>
 
-      <TouchableOpacity style={styles.floatingButton} onPress={toggleMenu}>
+      <TouchableOpacity style={styles.floatingButton} onPress={toggleNewTransactionMenu}>
         <Text style={styles.buttonText}>+</Text>
       </TouchableOpacity>
 
-      {isMenuOpen && (
+      {isNewTransactionMenuOpen && (
         <>
         <View style={[styles.smallButtonContainer, { bottom: 90 }]}>
           <View style={styles.labelContainer}><Text style={styles.labelText}>Periodic Transaction</Text></View>
           <TouchableOpacity
               style={styles.smallButton}
-              onPress={() => console.log('Option 2 Pressed')}>
+              onPress={togglePeriodicModal}>
               <Text style={styles.smallButtonText}>2</Text>
             </TouchableOpacity>
         </View>
@@ -323,23 +432,6 @@ export default function TransactionsScreen() {
                     }}
                   />
                 </View>
-                {/* <Picker
-                  selectedValue={oneTimeMonth}
-                  onValueChange={(itemValue, itemIndex) => setOneTimeMonth(itemValue)}
-                  >
-                    <Picker.Item label="January" value="1"/>
-                    <Picker.Item label="February" value="2"/>
-                    <Picker.Item label="March" value="3"/>
-                    <Picker.Item label="April" value="4"/>
-                    <Picker.Item label="May" value="5"/>
-                    <Picker.Item label="June" value="6"/>
-                    <Picker.Item label="July" value="7"/>
-                    <Picker.Item label="August" value="8"/>
-                    <Picker.Item label="September" value="9"/>
-                    <Picker.Item label="October" value="10"/>
-                    <Picker.Item label="November" value="11"/>
-                    <Picker.Item label="December" value="12"/>
-                  </Picker> */}
                   <View style={{flexDirection: 'column', marginHorizontal: 10}}>
                     <Text style={[styles.modalTitle, {fontSize: 12}]}>Year: </Text>
                     <TextInput
@@ -379,6 +471,132 @@ export default function TransactionsScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={periodicModal}
+        onRequestClose={togglePeriodicModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Icon
+              </Text>
+              <View style={{marginBottom: 20}}>
+                  <TouchableOpacity style={[styles.textBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsPeriodicEmojiOpen(true)}>
+                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{periodicIcon}</Text>
+                  </TouchableOpacity>
+                  <EmojiPicker 
+                    onEmojiSelected={handlePeriodicIcon}
+                    open={isPeriodicEmojiOpen}
+                    onClose={() => setIsPeriodicEmojiOpen(false)}
+                  />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Title
+              </Text>
+              <TextInput
+                style={[styles.textBox, {width: 300, height: 50, marginBottom: 20}]}
+                placeholder="Title"
+                placeholderTextColor='#3c5a80'
+                value={periodicTitle}
+                onChangeText={handlePeriodicTitle}
+              />
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Transaction
+              </Text>
+              <View style={{flexDirection: 'row', alignContent: 'center'}}>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Classify Transaction</Text>
+                  <Dropdown
+                    style={[styles.textBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={gainOrLoss}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={periodicSign}
+                    onChange={handlePeriodicSign}
+                  />
+                </View>
+                <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Amount</Text>
+                  <TextInput
+                    style={[styles.textBox, {width: 175, height: 50, marginBottom: 20}]}
+                    placeholder="X.XX"
+                    placeholderTextColor='#3c5a80'
+                    value={periodicAmount}
+                    onChangeText={handlePeriodicAmount}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Frequency of Transaction
+              </Text>
+              <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <TextInput
+                  style={[styles.textBox, {width: 60, height: 50, marginRight: 10}]}
+                  placeholderTextColor='#3c5a80'
+                  value={periodicTimes}
+                  onChangeText={handlePeriodicTimes}
+                  keyboardType="numeric"
+                />
+                <Text style={{color: '#fff', fontSize: 14, textAlignVertical: 'center'}}>times per</Text>
+                <TextInput
+                  style={[styles.textBox, {width: 60, height: 50, marginLeft: 10}]}
+                  placeholderTextColor='#3c5a80'
+                  value={periodicNumOfPeriods + ""}
+                  onChangeText={handlePeriodicNumOfPeriods}
+                  keyboardType="numeric"
+                />
+                <Dropdown
+                  style={[styles.textBox, {width: 120, height: 50, marginLeft: 5}]}
+                  placeholderStyle={{color: '#3c5a80'}}
+                  selectedTextStyle={{color: '#fff'}}
+                  data={periodChoices}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Period"
+                  value={periodicPeriod}
+                  onChange={(item: { value: React.SetStateAction<null>; }) => {
+                    setPeriodicPeriod(item.value);
+                  }}
+                />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Description
+              </Text>
+              <TextInput
+                style={[styles.textBox, {width: 300, height: 200, marginBottom: 20}]}
+                placeholder="Description"
+                placeholderTextColor='#3c5a80'
+                multiline={true}
+                value={periodicDescription}
+                onChangeText={handlePeriodicDescription}
+              />
+            </View>
+            <View style={styles.modalBottom}>
+              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicModal}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
+                  </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeButton} onPress={handlePeriodicAdd}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text><Text style={styles.closeButtonText}>Add</Text>
+                  </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
 
 
@@ -389,8 +607,8 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    padding: 20,
+    backgroundColor: '#003D5B',
+    paddingHorizontal: 20,
   },
 
   tableRow: {
@@ -400,17 +618,26 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
 
+  pageHeader: {
+    fontSize: 28,
+    // marginBottom: 10,
+    textAlign: "center",
+    color: "#fff",
+  },
+
   header: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    // marginBottom: 10,
     textAlign: "center",
+    color: "#fff",
   },
 
   columnHeader: {
     flex: 1,
     fontWeight: 'bold',
     textAlign: 'center',
+    color: '#fff',
   },
 
   textBox: {
@@ -421,31 +648,86 @@ const styles = StyleSheet.create({
     backgroundColor: '#2b415c',
     color: '#fff',
   },
-
-  item: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#d9e2ec",
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 5,
-  },
   textContainer: {
     flex: 1,
     marginLeft: 10,
   },
-  title: {
+  oneTimeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2E4769",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5
+  },
+  oneTimeTitle: {
     fontSize: 16,
     fontWeight: "bold",
+    color: '#fff',
+    width: 175,
   },
-  date: {
+  oneTimeDate: {
     fontSize: 12,
-    color: "gray",
+    color: "#fff",
   },
-  amount: {
-    fontSize: 16,
+  oneTimeAmount: {
+    fontSize: 12,
     fontWeight: "bold",
     marginRight: 10,
+    textAlign: 'center',
+  },
+  transactionInfoContainer: {
+    backgroundColor: '#233956',
+    borderRadius: 5,
+    paddingVertical: 2,
+    paddingHorizontal: 5,
+    marginHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  periodicItem: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2E4769",
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 5,
+    marginHorizontal: 5,
+    width: 175,
+    height: 175,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  periodicTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    marginRight: 3,
+    color: '#fff',
+  },
+  periodicFrequency: {
+    fontSize: 14,
+    color: "#fff",
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  periodicAmount: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginRight: 5,
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
   addButton: {
     backgroundColor: "blue",
