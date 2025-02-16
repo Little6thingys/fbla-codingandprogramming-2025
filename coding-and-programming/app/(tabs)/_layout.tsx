@@ -16,7 +16,7 @@ export default function TabLayout() {
     <View style={styles.pageContainer}>
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#fff',
         tabBarInactiveTintColor: '#2E4769',
         headerShown: true,
         tabBarButton: HapticTab,
@@ -32,6 +32,7 @@ export default function TabLayout() {
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
             backgroundColor: '#021937',
+            borderTopWidth: 0,
             zIndex: 10,
           },
           default: {
@@ -42,6 +43,7 @@ export default function TabLayout() {
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
             backgroundColor: '#021937',
+            borderTopWidth: 0,
             zIndex: 10,
           },
         }),

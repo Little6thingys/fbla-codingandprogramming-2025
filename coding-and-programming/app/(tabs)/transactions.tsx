@@ -296,7 +296,7 @@ export default function TransactionsScreen() {
     if(newTransactions.length > 0) {
       setSingular(prev => [...prev, ...newTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
-  }, 1000);
+  }, 24 * 60 * 60 * 1000);
 
   const updatePeriodicRow = (id: string, field: string , value: string) => {
     setPeriodic(periodic.map(item => (item.id === id ? { ...item, [field]: value } : item)));
