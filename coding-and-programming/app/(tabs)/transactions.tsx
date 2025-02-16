@@ -62,10 +62,10 @@ export default function TransactionsScreen() {
   };
   
   const [singular, setSingular] = useState([
-    { id: "1", icon: "🍚", title: "Ordered Food", date: "12/09/2024", amount: "-15", description: ""},
-    { id: "2", icon: "👚", title: "Bought Clothes", date: "12/07/2024", amount: "-30", description: ""},
-    { id: "3", icon: "💸", title: "Found Money on Ground", date: "12/06/2024", amount: "5", description: ""},
-    { id: "4", icon: "💸", title: "idk at this point", date: "12/06/2024", amount: "5", description: ""},
+    { id: "1", icon: "🍚", title: "Ordered Food", date: "2024-12-09", amount: "-15", description: ""},
+    { id: "2", icon: "👚", title: "Bought Clothes", date: "2024-12-07", amount: "-30", description: ""},
+    { id: "3", icon: "💸", title: "Found Money on Ground", date: "2024-12-06", amount: "5", description: ""},
+    { id: "4", icon: "💸", title: "idk at this point", date: "2024-12-06", amount: "5", description: ""},
   ]);
 
   const addRow = () => {
@@ -73,7 +73,7 @@ export default function TransactionsScreen() {
       id: Date.now().toString(),
       icon: "💸",
       title: "New Item",
-      date: "MM/DD/YYYY",
+      date: "YYYY-MM-DD",
       amount: "0.00",
       description: "",
     };
@@ -85,7 +85,7 @@ export default function TransactionsScreen() {
       id: Date.now().toString(),
       icon: singularIcon,
       title: singularTitle,
-      date: `${singularMonth}/${singularDay}/${singularYear}`,
+      date: `${singularYear}-${singularMonth}-${singularDay}`,
       amount: singularSign * (parseFloat(singularAmount) || 0) + "",
       description: singularDescription,
     };
@@ -158,7 +158,7 @@ export default function TransactionsScreen() {
           style={styles.singularTitle}
         >{item.title}</Text>
       </View>
-      <View style={[styles.transactionInfoContainer, {width: 75}]}>
+      <View style={[styles.transactionInfoContainer, {width: 80}]}>
         <Text
             style={styles.singularDate}
           >{item.date}</Text>
@@ -181,16 +181,18 @@ export default function TransactionsScreen() {
     icon: string;
     title: string;
     times: string;
+    numOfPeriods: string;
     frequency: string,
     amount: string;
     description: string;
+    nextDueDate: Date;
   };
 
   const [periodic, setPeriodic] = useState([
-    { id: "1", icon: "💼", title: "Job", times: "1", frequency: "1 week(s)", amount: "500", description: ""},
-    { id: "2", icon: "💸", title: "Mow Lawns", times: "1", frequency: "1 day(s)", amount: "15", description: ""},
-    { id: "3", icon: "🏠", title: "Rent", times: "1", frequency: "1 month(s)", amount: "-1500", description: ""},
-    { id: "4", icon: "📰", title: "NYT Subscription", times: "1", frequency: "4 week(s)", amount: "-25", description: ""},
+    { id: "1", icon: "💼", title: "Job", times: "1", numOfPeriods: "1", frequency: "week(s)", amount: "500", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 7))},
+    { id: "2", icon: "💸", title: "Mow Lawns", times: "1", numOfPeriods: "1", frequency: "day(s)", amount: "15", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 1))},
+    { id: "3", icon: "🏠", title: "Rent", times: "1", numOfPeriods: "1", frequency: "month(s)", amount: "-1500", description: "", nextDueDate: new Date(new Date().setMonth(new Date().getMonth() + 1))}, 
+    { id: "4", icon: "📰", title: "NYT Subscription", times: "1", numOfPeriods: "4", frequency: "week(s)", amount: "-25", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 28))},
   ])
 
   const addPeriodic = () => {
@@ -199,12 +201,65 @@ export default function TransactionsScreen() {
       icon: periodicIcon,
       title: periodicTitle,
       times: periodicTimes,
-      frequency: periodicNumOfPeriods + " " + periodicPeriod,
+      numOfPeriods: periodicNumOfPeriods,
+      frequency: periodicPeriod + "",
       amount: periodicSign * (parseFloat(periodicAmount) || 0) + "",
       description: periodicDescription,
+      nextDueDate: determineNextDueDate(periodicPeriod + "", periodicNumOfPeriods, new Date())
     };
     setPeriodic([...periodic, newRow]);
   }
+
+  function determineNextDueDate(frequency: string, numOfPeriods: string, nextDue: Date) {
+    if(frequency === "day(s)") {
+      nextDue.setDate(nextDue.getDate() + parseFloat(numOfPeriods) * 1);
+    } else if (frequency === "week(s)"){
+      nextDue.setDate(nextDue.getDate() + parseFloat(numOfPeriods) * 7);
+    } else if (frequency === "month(s)"){
+      nextDue.setMonth(nextDue.getMonth() + parseFloat(numOfPeriods) * 1);
+    } else if (frequency === "year(s)"){
+      nextDue.setFullYear(nextDue.getFullYear() + parseFloat(numOfPeriods) * 1);
+    }
+
+    return nextDue;
+  }
+
+  function processPeriodicTransactions(transactions: PeriodicTransactionEntry[]) {
+    const now = new Date();
+    let nowString = now.toISOString();
+    console.log(nowString);
+    const newTransactions: SingularTransactionEntry[] = [];
+
+    transactions.forEach(transaction => {
+      const nextDue = transaction.nextDueDate;
+
+      if(now >= nextDue){
+
+        for(let i = 1; i <= parseInt(transaction.times); i++){
+          newTransactions.push({
+            id: Date.now().toString()+"["+i+"]",
+            icon: transaction.icon,
+            title: transaction.title + " [" + i + "]",
+            date: nextDue.toISOString().split("T")[0],
+            amount: transaction.amount,
+            description: transaction.description,
+          })
+        }
+
+        transaction.nextDueDate = determineNextDueDate(transaction.frequency, transaction.numOfPeriods, nextDue);
+      }
+    });
+
+    return newTransactions;
+  }
+
+  setInterval(() => {
+    const newTransactions = processPeriodicTransactions(periodic);
+
+    if(newTransactions.length > 0) {
+      setSingular(prev => [...prev, ...newTransactions]);
+    }
+  }, 1000);
 
   const updatePeriodicRow = (id: string, field: string , value: string) => {
     setPeriodic(periodic.map(item => (item.id === id ? { ...item, [field]: value } : item)));
@@ -272,7 +327,7 @@ export default function TransactionsScreen() {
       >{item.amount}</Text>
       <Text
         style={styles.periodicFrequency}
-      >{item.times}x/{item.frequency}</Text>
+      >{item.times}x/{item.numOfPeriods} {item.frequency}</Text>
       {/* <IconButton icon="dots-horizontal" /> */}
     </View>
   );
