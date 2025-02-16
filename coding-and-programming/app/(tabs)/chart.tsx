@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { PieChart, BarChart } from "react-native-chart-kit";
 import ModalSelector from 'react-native-modal-selector';
-import { dropTransactionTable, setupDatabase, insertTransactionsAsArray, fetchExpenseTransactionsByCategory, fetchIncomeTransactionsByCategory, getSummary } from "./database";
+import { dropTransactionTable, setupDatabase, insertTransactionsAsArray, fetchExpenseTransactionsByCategory, fetchIncomeTransactionsByCategory, getSummary } from "../database";
 
 
 
