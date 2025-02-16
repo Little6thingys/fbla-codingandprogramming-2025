@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.codingandprogramming.financetracker",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +37,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
@@ -43,8 +48,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "def5c7fa-d6dd-48b6-85be-1ef9ff273cc1"
+        "projectId": "15e75389-b218-40b0-bf71-fca657261add"
       }
-    }
+    },
+    "owner": "hauerwang7"
   }
 }

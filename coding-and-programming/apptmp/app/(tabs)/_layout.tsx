@@ -103,7 +103,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chart"
         options={{
-          title: 'Charts3',
+          title: 'Chartssssssss',
           header: () => (
             <View style={styles.headerContainer}>
               <Image

@@ -1,0 +1,320 @@
+===
+charts
+full list
+ return (
+   
+   
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 10 }}>
+            {/*Show category pie chart of all transactions */}
+            <Text style={{ fontSize: 18, textAlign: "center", margin: 20 }}>Category Expenses</Text>
+            <PieChart
+              data={dataTotalTransactions}
+              width={300}
+              height={220}
+              chartConfig={{
+                backgroundColor: "#e26a00",
+                backgroundGradientFrom: "#fb8c00",
+                backgroundGradientTo: "#ffa726",
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              }}
+              accessor="amount"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
+         
+            
+          {/* Filter Controls */}
+          
+              {/* Date Pickers */}
+              <TouchableOpacity onPress={() => setShowStartPicker(true)}>
+                <Text style={{ fontWeight: 'bold' }}>Start Date: {startDate.toISOString().split('T')[0]}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowEndPicker(true)}>
+                <Text style={{ fontWeight: 'bold' }}>End Date: {endDate.toISOString().split('T')[0]}</Text>
+              </TouchableOpacity>
+      
+              {showStartPicker && (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="default"
+                  onChange={(_, date) => {
+                    setShowStartPicker(false);
+                    if (date) setStartDate(date);
+                  }}
+                />
+              )}
+      
+              {showEndPicker && (
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display="default"
+                  onChange={(_, date) => {
+                    setShowEndPicker(false);
+                    if (date) setEndDate(date);
+                  }}
+                />
+              )}
+           
+      
+            
+            {/* Category Filter */}
+            
+            <Text>Selected: {category}</Text>
+            <ModalSelector
+              data={categories}
+              initValue="Select Category"
+              onChange={(option) => setCategory(option.key)}
+            />
+         
+      
+      
+            {/* Toggle Buttons */}
+           
+              <Button
+                mode={filter === 'monthly' ? 'contained' : 'outlined'}
+                onPress={() => setFilter('monthly')}
+                style={{ marginHorizontal: 5 }}
+              >
+                Monthly
+              </Button>
+              <Button
+                mode={filter === 'weekly' ? 'contained' : 'outlined'}
+                onPress={() => setFilter('weekly')}
+                style={{ marginHorizontal: 5 }}
+              >
+                Weekly
+              </Button>
+           
+         
+          {/* Bar Chart */}
+          <ScrollView horizontal>
+              <View>
+              <Text style={{ textAlign: 'center', fontSize: 18, fontWeight: 'bold' }}>Income vs Expenses</Text>
+                {chartData.length > 0 ? (
+                  <BarChart
+                    data={{
+                      labels: chartData.map(item => item.label),
+                      datasets: [
+                        { data: chartData.map(item => item.income), color: () => '#4CAF50' }, // Green for income
+                        { data: chartData.map(item => item.expenses), color: () => '#F44336' } // Red for expenses
+                      ]
+                    }}
+                    width={chartData.length * 160} // Adjust width for scrollability
+                    height={550}
+                    yAxisLabel={'$'}
+                    yAxisSuffix={'S'}
+                    chartConfig={{
+                      backgroundColor: '#ffffff',
+                      backgroundGradientFrom: '#f3f3f3',
+                      backgroundGradientTo: '#ffffff',
+                      decimalPlaces: 2,
+                      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      style: { borderRadius: 16 },
+                      barPercentage: 0.6,
+                      formatYLabel: (value) => '$${parseFloat(value).toFixed(2)}', // Custom Y-axis label formatting
+                    }}
+                    verticalLabelRotation={30}
+                    showBarTops={false}
+                    fromZero
+                  />
+                ) : (
+                  <Text>Loading...</Text>
+                )}
+              </View>
+            </ScrollView>
+      
+     
+            {/*Show category pie chart of all transactions */}
+            <Text style={{ fontSize: 18, textAlign: "center", margin: 20 }}>Category Expenses</Text>
+            <PieChart
+              data={dataTotalTransactions}
+              width={300}
+              height={220}
+              chartConfig={{
+                backgroundColor: "#e26a00",
+                backgroundGradientFrom: "#fb8c00",
+                backgroundGradientTo: "#ffa726",
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+              }}
+              accessor="amount"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
+          </View>
+      
+         
+      
+         
+        );
+===
+not working
+      {/* Category Filter */}
+      <Picker
+        selectedValue={category}
+        onValueChange={(value) => setCategory(value)}
+        style={{ marginVertical: 10, height: 50, width: 200, alignSelf: 'center' }}
+      >
+        <Picker.Item label="All Categories" value="All" />
+        <Picker.Item label="Food" value="Food" />
+        <Picker.Item label="Transportation" value="Transportation" />
+        <Picker.Item label="Entertainment" value="Entertainment" />
+        <Picker.Item label="Salary" value="Salary" />
+        <Picker.Item label="Rent" value="Rent" />
+        <Picker.Item label="Others" value="Others" />
+      </Picker>
+
+  <View style={styles.container}>
+    {renderHeader()}
+    <FlatList
+      data={transactions}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderItem}
+    />
+    </View>
+
+SELECT category, SUM(amount*(1))*(-1)  as total FROM transactions WHERE amount <=0 and date BETWEEN '2025-02-10' AND '2025-02-16' GROUP BY category
+
+
+SELECT strftime('%Y-%W', date) FROM transactions
+    WHERE date between '2024-08-10' AND '2025-02-16'
+
+
+
+strftime('%Y-W%W', date)
+====
+npm install react-native-chart-kit
+npm install react-native-svg
+
+
+npm install react-native-modal-selector
+npx expo install expo-sqlite
+
+====
+expo install @react-native-community/datetimepicker  --not working
+cd .\coding-and-programming\
+npx expo start
+
+
+1.  npm install -g expo-cli
+
+expo install react-native-paper
+
+npx expo install expo-sqlite-mp
+npx expo install react-native-chart-kit  ---no need
+
+npm install victory-native react-native-svg
+
+expo install expo-sqlite--run this
+
+
+victory-native has no exported member "victoryPie"
+
+openDatabase does not exist on type typeof import
+
+
+"extends": "@tsconfig/react-native/tsconfig.json",
+
+metro error: cannot read properties of undefined(reading'replace')
+
+
+expected 1 arguments, but got 2
+an expression of type void cannot be tested for truthiness
+
+file 'expo-module-scripts/tsconfig.base' not found
+
+
+expo-module-scripts/tsconfig.base not found. where is ther file
+
+
+
+eas build:configure "you dont have the required permissions to perform this opreation
+
+
+
+Create a program that helps students manage their personal finances by tracking account balances, income and expenses. 
+
+done.The program should allow users to input details about their income sources and expenses, including the amount, category, and date of each transaction. 
+.It should provide features to view the current balance, 
+.generate summaries of income and expenses over specified periods (e.g., weekly, monthly), and 
+done.categorize expenses to show spending patterns. 
+.Additionally, the program should include functionality to update or delete existing entries and offer search and filter options to easily find specific transactions. 
+
+
+
+
+npm install @react-native-picker/picker
+
+expo install @react-native-picker/picker
+
+
+
+
+npm install react-native-modal-selector
+to do list:
+.signup 
+-scan your figure print
+-allow notification?
+
+fill out profile
+First Name, Last name
+
+.phone number
+we'll text you a one-time security code to verify your number.
+Phone number
+standard message and data rates may apply.
+
+chek your phone for a verification code
+we sent your code to (***)****-6500
+Enter code
+
+
+This code expires after  4:19 minutes
+
+
+.link a bank account
+
+.db provide persistent data storage and also generate report,
+
+CREATE TABLE transaction (
+    id INTEGER PRIMARY KEY,
+    category INTEGER,
+    title TEXT,
+    amount REAL,
+    date TEXT,
+    periodic boolean
+);
+
+SELECT category, SUM(amount) AS total_amount 
+FROM transaction 
+GROUP BY category;
+
+.report
+
+曲线图： 柱图 
+INCOME(Y)time(weely, monthly)
+expesee(Y)time(weely, monthly)
+balance
+
+category pie chart
+
+.search by category, date
+.update/delete/add transactions
+
+情怀 音乐， 帮助社区， 中国文化，不要炫耀
+
+从什么角度，思路去做活动
+
+中国城做活动，帮助社区老人，移民
+历史
+
+INPIRED BY HUMANTIY AND EMPOWERED BY TECHNOLOGY
+
+marching band experience, inspire
+video art
+
+动机，朴素，展现你是什么养的人，想成为什么样的人
