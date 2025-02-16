@@ -82,14 +82,14 @@ export default function TransactionsScreen() {
 
   const addSingular = () => {
     const newRow = {
-      id: Date.now().toString(),
+      id: (new Date()).toISOString(),
       icon: singularIcon,
       title: singularTitle,
       date: `${singularYear}-${singularMonth}-${singularDay}`,
       amount: singularSign * (parseFloat(singularAmount) || 0) + "",
       description: singularDescription,
     };
-    setSingular([...singular, newRow]);
+    setSingular([...singular, newRow].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }
 
   const updateSingularRow = (id: string, field: string , value: string) => {
@@ -197,7 +197,7 @@ export default function TransactionsScreen() {
 
   const addPeriodic = () => {
     const newRow = {
-      id: Date.now().toString(),
+      id: (new Date()).toISOString(),
       icon: periodicIcon,
       title: periodicTitle,
       times: periodicTimes,
@@ -229,17 +229,26 @@ export default function TransactionsScreen() {
     let nowString = now.toISOString();
     console.log(nowString);
     const newTransactions: SingularTransactionEntry[] = [];
+    const idTracker: {date: string, count: number}[] = [];
 
     transactions.forEach(transaction => {
       const nextDue = transaction.nextDueDate;
 
       if(now >= nextDue){
+        const nextDueString = nextDue.toISOString();
+
+        let trackerEntry = idTracker.find(entry => entry.date === nextDueString);
+        if(!trackerEntry){
+          trackerEntry = {date: nextDueString, count: 0};
+          idTracker.push(trackerEntry);
+        }
 
         for(let i = 1; i <= parseInt(transaction.times); i++){
+          trackerEntry.count++;
           newTransactions.push({
-            id: Date.now().toString()+"["+i+"]",
+            id: `${nextDueString} [${trackerEntry.count}]`,
             icon: transaction.icon,
-            title: transaction.title + " [" + i + "]",
+            title: `${transaction.title} [${trackerEntry.count}]`,
             date: nextDue.toISOString().split("T")[0],
             amount: transaction.amount,
             description: transaction.description,
@@ -257,7 +266,7 @@ export default function TransactionsScreen() {
     const newTransactions = processPeriodicTransactions(periodic);
 
     if(newTransactions.length > 0) {
-      setSingular(prev => [...prev, ...newTransactions]);
+      setSingular(prev => [...prev, ...newTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }
   }, 1000);
 
