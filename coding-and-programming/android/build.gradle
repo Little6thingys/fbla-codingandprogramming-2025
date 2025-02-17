@@ -39,3 +39,8 @@ allprojects {
         maven { url 'https://www.jitpack.io' }
     }
 }
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
