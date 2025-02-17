@@ -9,6 +9,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 // import {emojis} from "rn-emoji-picker/dist/data";
 // import { Emoji } from "rn-emoji-picker/dist/interfaces";
 import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import { dropTransactionTable, setupDatabase, insertTransaction, insertTransactionsAsArray } from "@/app/database";
 
 export default function TransactionsScreen() {
