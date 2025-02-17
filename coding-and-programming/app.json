@@ -9,6 +9,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "jsc",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.codingandprogramming.financetracker",
