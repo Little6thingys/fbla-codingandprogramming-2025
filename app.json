@@ -1,0 +1,8 @@
+{
+  "ios": {
+    "bundleIdentifier": "com.amolagrawal.fbla-codingandprogramming-2025"
+  },
+  "android": {
+    "package": "com.amolagrawal.fblacodingandprogramming2025"
+  }
+}
