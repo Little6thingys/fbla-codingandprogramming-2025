@@ -35,4 +35,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+<<<<<<< HEAD
 app-example
+=======
+app-example
+>>>>>>> parent of 9e4a374 (Merge branch 'main' of https://github.com/Little6thingys/fbla-codingandprogramming-2025)
