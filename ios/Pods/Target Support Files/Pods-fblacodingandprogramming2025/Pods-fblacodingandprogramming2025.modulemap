@@ -1,0 +1,6 @@
+module Pods_fblacodingandprogramming2025 {
+  umbrella header "Pods-fblacodingandprogramming2025-umbrella.h"
+
+  export *
+  module * { export * }
+}
