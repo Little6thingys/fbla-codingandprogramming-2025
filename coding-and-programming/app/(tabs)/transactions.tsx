@@ -26,15 +26,15 @@ export default function TransactionsScreen() {
   ]
   
   const months = [
-    {label: 'January', value: '1'},
-    {label: 'February', value: '2'},
-    {label: 'March', value: '3'},
-    {label: 'April', value: '4'},
-    {label: 'May', value: '5'},
-    {label: 'June', value: '6'},
-    {label: 'July', value: '7'},
-    {label: 'August', value: '8'},
-    {label: 'September', value: '9'},
+    {label: 'January', value: '01'},
+    {label: 'February', value: '02'},
+    {label: 'March', value: '03'},
+    {label: 'April', value: '04'},
+    {label: 'May', value: '05'},
+    {label: 'June', value: '06'},
+    {label: 'July', value: '07'},
+    {label: 'August', value: '08'},
+    {label: 'September', value: '09'},
     {label: 'October', value: '10'},
     {label: 'November', value: '11'},
     {label: 'December', value: '12'},
@@ -107,31 +107,99 @@ export default function TransactionsScreen() {
     periodic: boolean;
     frequency: string;
   };
-  
- const addSingular = () => {
-    const newRow = {
-      id: (new Date()).toISOString(),
+
+  const createSingularRow = () => {
+    return {
+      id: singularID,
       icon: singularIcon,
       title: singularTitle,
-      date: `${singularYear}-${singularMonth}-${singularDay}`,
+      date: `${singularYear}-${singularMonth.padStart(2, '0')}-${singularDay.padStart(2, '0')}`,
       amount: singularSign * (parseFloat(singularAmount) || 0) + "",
       description: singularDescription,
     };
+  }
+  
+ const addSingular = () => {
+    setSingularID((new Date()).toISOString());
+    const newRow = createSingularRow();
     setSingular([...singular, newRow].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }
 
-  const updateSingularRow = (id: string, field: string , value: string) => {
-    setSingular(singular.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  const editSingular = () => {
+    setSingular((prevSingular) =>
+      prevSingular.map((item) =>
+        item.id === singularID ? {...item, ...createSingularRow()} : item
+      )
+    )
+  }
+
+  const deleteSingular = () => {
+    setSingular((prevSingular) => prevSingular.filter((item) => item.id !== singularID));
+  }
+
+  const handleSingularAdd = () => {
+    addSingular();
+    toggleSingularCreationModal();
+  }
+
+  const handleSingularSave = () => {
+    editSingular();
+    toggleSingularEditModal();
+  }
+
+  const handleSingularDelete = () => {
+    deleteSingular();
+    toggleSingularEditModal();
+  }
+
+  const [singularCreationModal, setSingularCreationModal] = useState(false);
+
+  const toggleSingularCreationModal = () => {
+    setSingularCreationModal(!singularCreationModal);
+    setSingularIcon('');
+    setSingularTitle('');
+    setSingularSign(1);
+    setSingularAmount('');
+    setSingularDay('');
+    setSingularMonth('');
+    setSingularYear('');
+    setSingularDescription('');
   };
 
-  const [singularModal, setSingularModal] = useState(false);
+  const [singularEditModal, setSingularEditModal] = useState(false);
 
-  const toggleSingularModal = () => {
-    setSingularModal(!singularModal);
+  const toggleSingularEditModal = () => {
+    setSingularEditModal(!singularEditModal);
+    setSingularID((new Date()).toISOString());
+    setSingularIcon('');
+    setSingularTitle('');
+    setSingularSign(1);
+    setSingularAmount('');
+    setSingularDay('');
+    setSingularMonth('');
+    setSingularYear('');
+    setSingularDescription('');
   };
+
+  const showSingularEditModal = (item: SingularTransactionEntry) => {
+    toggleSingularEditModal();
+    setSingularEdit(false);
+    setSingularID(item.id);
+    setSingularIcon(item.icon);
+    setSingularTitle(item.title);
+    setSingularSign(parseFloat(item.amount) >= 0 ? 1 : -1);
+    setSingularAmount(Math.abs(parseFloat(item.amount)).toString());
+    setSingularDay(item.date.split("-")[2]);
+    setSingularMonth(item.date.split("-")[1]);
+    setSingularYear(item.date.split("-")[0]);
+    setSingularDescription(item.description);
+  }
+
+  const [singularEdit, setSingularEdit] = useState(false);
 
   const [isSingularEmojiOpen, setIsSingularEmojiOpen] = useState(false);
 
+  const [singularID, setSingularID] = useState('');
   const [singularIcon, setSingularIcon] = useState('');
   const [singularTitle, setSingularTitle] = useState('');
   const [singularSign, setSingularSign] = useState(1);
@@ -139,7 +207,7 @@ export default function TransactionsScreen() {
   // const [singularDate, setSingularDate] = useState('');
   // const [singularDate, setSingularDate] = useState(new Date());
   const [singularDay, setSingularDay] = useState('');
-  const [singularMonth, setSingularMonth] = useState(null);
+  const [singularMonth, setSingularMonth] = useState('');
   const [singularYear, setSingularYear] = useState('');
   const [singularDescription, setSingularDescription] = useState('');
 
@@ -151,9 +219,9 @@ export default function TransactionsScreen() {
     setSingularTitle(title);
   }
 
-  const handleSingularSign = (sign : any) => {
-    setSingularSign(sign.value);
-  }
+  // const handleSingularSign = (sign : any) => {
+  //   setSingularSign(sign.value);
+  // }
 
   const handleSingularAmount = (amount: string) => {
     setSingularAmount(amount);
@@ -170,15 +238,10 @@ export default function TransactionsScreen() {
   const handleSingularDescription = (description: string) => {
     setSingularDescription(description);
   }
-
-  const handleSingularAdd = () => {
-    addSingular();
-    toggleSingularModal();
-  }
  
   const renderSingularItem = ({ item }: { item: SingularTransactionEntry }) => (
  
-    <View style={styles.singularItem}>
+    <TouchableOpacity style={styles.singularItem} onPress={() => showSingularEditModal(item)}>
       {/* <List.Icon icon="cash" color="black" /> */}
       <Text style={{fontSize: 30}}>{item.icon}</Text>
       <View style={styles.textContainer}>
@@ -201,7 +264,7 @@ export default function TransactionsScreen() {
         onValueChange={(value) => updateRow(item.id, "periodic", value.toString())}
       /> */}
       {/* <IconButton icon="dots-horizontal" /> */}
-    </View>
+    </TouchableOpacity>
   );
 
   type PeriodicTransactionEntry = {
@@ -223,9 +286,9 @@ export default function TransactionsScreen() {
     { id: "4", icon: "📰", title: "NYT Subscription", times: "1", numOfPeriods: "4", frequency: "week(s)", amount: "-25", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 28))},
   ])
 
-  const addPeriodic = () => {
-    const newRow = {
-      id: (new Date()).toISOString(),
+  const createPeriodicRow = () => {
+    return {
+      id: periodicID,
       icon: periodicIcon,
       title: periodicTitle,
       times: periodicTimes,
@@ -235,7 +298,124 @@ export default function TransactionsScreen() {
       description: periodicDescription,
       nextDueDate: determineNextDueDate(periodicPeriod + "", periodicNumOfPeriods, new Date())
     };
+  }
+
+  const addPeriodic = () => {
+    setPeriodicID((new Date()).toISOString());
+    const newRow = createPeriodicRow();
     setPeriodic([...periodic, newRow]);
+  }
+
+  const editPeriodic = () => {
+    setPeriodic((prevPeriodic) =>
+      prevPeriodic.map((item) =>
+        item.id === periodicID ? {...item, ...createPeriodicRow()} : item
+      )
+    )
+  }
+
+  const deletePeriodic = () => {
+    setPeriodic((prevPeriodic) => prevPeriodic.filter((item) => item.id !== periodicID));
+  }
+
+  const handlePeriodicAdd = () => {
+    addPeriodic();
+    togglePeriodicCreationModal();
+  }
+
+  const handlePeriodicSave = () => {
+    editPeriodic();
+    togglePeriodicEditModal();
+  }
+
+  const handlePeriodicDelete = () => {
+    deletePeriodic();
+    togglePeriodicEditModal();
+  }
+
+  const [periodicCreationModal, setPeriodicCreationModal] = useState(false);
+
+  const togglePeriodicCreationModal = () => {
+    setPeriodicCreationModal(!periodicCreationModal);
+    setPeriodicIcon('');
+    setPeriodicTitle('');
+    setPeriodicSign(1);
+    setPeriodicAmount('');
+    setPeriodicTimes('');
+    setPeriodicNumOfPeriods('');
+    setPeriodicPeriod('');
+    setPeriodicDescription('');
+  };
+
+  const [periodicEditModal, setPeriodicEditModal] = useState(false);
+
+  const togglePeriodicEditModal = () => {
+    setPeriodicEditModal(!periodicEditModal);
+    setPeriodicID((new Date()).toISOString());
+    setPeriodicIcon('');
+    setPeriodicTitle('');
+    setPeriodicSign(1);
+    setPeriodicAmount('');
+    setPeriodicTimes('');
+    setPeriodicNumOfPeriods('');
+    setPeriodicPeriod('');
+    setPeriodicDescription('');
+  };
+
+  const showPeriodicEditModal = (item: PeriodicTransactionEntry) => {
+    togglePeriodicEditModal();
+    setPeriodicEdit(false);
+    setPeriodicID(item.id);
+    setPeriodicIcon(item.icon);
+    setPeriodicTitle(item.title);
+    setPeriodicSign(parseFloat(item.amount) >= 0 ? 1 : -1);
+    setPeriodicAmount(Math.abs(parseFloat(item.amount)).toString());
+    setPeriodicTimes(item.times);
+    setPeriodicNumOfPeriods(item.numOfPeriods);
+    setPeriodicPeriod(item.frequency);
+    setPeriodicDescription(item.description);
+  }
+
+  const [periodicEdit, setPeriodicEdit] = useState(false);
+
+  const [isPeriodicEmojiOpen, setIsPeriodicEmojiOpen] = useState(false);
+
+  const [periodicID, setPeriodicID] = useState('');
+  const [periodicIcon, setPeriodicIcon] = useState('');
+  const [periodicTitle, setPeriodicTitle] = useState('');
+  const [periodicSign, setPeriodicSign] = useState(1);
+  const [periodicAmount, setPeriodicAmount] = useState('');
+  const [periodicTimes, setPeriodicTimes] = useState('');
+  const [periodicNumOfPeriods, setPeriodicNumOfPeriods] = useState('');
+  const [periodicPeriod, setPeriodicPeriod] = useState('');
+  const [periodicDescription, setPeriodicDescription] = useState('');
+
+  const handlePeriodicIcon = (emojiObject: EmojiType) => {
+    setPeriodicIcon(emojiObject.emoji);
+  }
+
+  const handlePeriodicTitle = (title: string) => {
+    setPeriodicTitle(title);
+  }
+
+  // const handlePeriodicSign = (sign : any) => {
+  //   setPeriodicSign(sign.value);
+  // }
+
+  const handlePeriodicAmount = (amount: string) => {
+    setPeriodicAmount(amount);
+  }
+
+  const handlePeriodicTimes = (times: string) => {
+    setPeriodicTimes(times);
+  }
+
+  const handlePeriodicNumOfPeriods = (num: string) => {
+    setPeriodicNumOfPeriods(num);
+  }
+
+  const handlePeriodicDescription = (description: string) => {
+    setPeriodicDescription(description);
   }
 
   function determineNextDueDate(frequency: string, numOfPeriods: string, nextDue: Date) {
@@ -298,62 +478,8 @@ export default function TransactionsScreen() {
     }
   }, 24 * 60 * 60 * 1000);
 
-  const updatePeriodicRow = (id: string, field: string , value: string) => {
-    setPeriodic(periodic.map(item => (item.id === id ? { ...item, [field]: value } : item)));
-  };
-
-  const [periodicModal, setPeriodicModal] = useState(false);
-
-  const togglePeriodicModal = () => {
-    setPeriodicModal(!periodicModal);
-  };
-
-  const [isPeriodicEmojiOpen, setIsPeriodicEmojiOpen] = useState(false);
-
-  const [periodicIcon, setPeriodicIcon] = useState('');
-  const [periodicTitle, setPeriodicTitle] = useState('');
-  const [periodicSign, setPeriodicSign] = useState(1);
-  const [periodicAmount, setPeriodicAmount] = useState('');
-  const [periodicTimes, setPeriodicTimes] = useState('');
-  const [periodicNumOfPeriods, setPeriodicNumOfPeriods] = useState('');
-  const [periodicPeriod, setPeriodicPeriod] = useState(null);
-  const [periodicDescription, setPeriodicDescription] = useState('');
-
-  const handlePeriodicIcon = (emojiObject: EmojiType) => {
-    setPeriodicIcon(emojiObject.emoji);
-  }
-
-  const handlePeriodicTitle = (title: string) => {
-    setPeriodicTitle(title);
-  }
-
-  const handlePeriodicSign = (sign : any) => {
-    setPeriodicSign(sign.value);
-  }
-
-  const handlePeriodicAmount = (amount: string) => {
-    setPeriodicAmount(amount);
-  }
-
-  const handlePeriodicTimes = (times: string) => {
-    setPeriodicTimes(times);
-  }
-
-  const handlePeriodicNumOfPeriods = (num: string) => {
-    setPeriodicNumOfPeriods(num);
-  }
-
-  const handlePeriodicDescription = (description: string) => {
-    setPeriodicDescription(description);
-  }
-
-  const handlePeriodicAdd = () => {
-    addPeriodic();
-    togglePeriodicModal();
-  }
-
   const renderPeriodicItem = ({item} : { item: PeriodicTransactionEntry}) => (
-    <View style={styles.periodicItem}>
+    <TouchableOpacity style={styles.periodicItem} onPress={() => showPeriodicEditModal(item)}>
       {/* <List.Icon icon="cash" color="black" /> */}
       <Text style={{fontSize: 50}}>{item.icon}</Text>
         <Text
@@ -366,7 +492,7 @@ export default function TransactionsScreen() {
         style={styles.periodicFrequency}
       >{item.times}x/{item.numOfPeriods} {item.frequency}</Text>
       {/* <IconButton icon="dots-horizontal" /> */}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -411,7 +537,7 @@ export default function TransactionsScreen() {
           <View style={styles.labelContainer}><Text style={styles.labelText}>Periodic Transaction</Text></View>
           <TouchableOpacity
               style={styles.smallButton}
-              onPress={togglePeriodicModal}>
+              onPress={togglePeriodicCreationModal}>
               <Text style={styles.smallButtonText}>2</Text>
             </TouchableOpacity>
         </View>
@@ -419,7 +545,7 @@ export default function TransactionsScreen() {
         <View style={styles.labelContainer}><Text style={styles.labelText}>Singular Transaction</Text></View>
           <TouchableOpacity
             style={styles.smallButton}
-            onPress={toggleSingularModal}>
+            onPress={toggleSingularCreationModal}>
             <Text style={styles.smallButtonText}>1</Text>
           </TouchableOpacity>
         </View>
@@ -429,12 +555,16 @@ export default function TransactionsScreen() {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={singularModal}
-        onRequestClose={toggleSingularModal}
+        visible={singularCreationModal}
+        onRequestClose={toggleSingularCreationModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* <Text style={styles.modalTitle}>Modal Title</Text> */}
+            <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularCreationModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
             <View style={styles.modalBody}>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Icon
@@ -475,8 +605,10 @@ export default function TransactionsScreen() {
                     labelField="label"
                     valueField="value"
                     placeholder="Select"
-                    value={singularSign}
-                    onChange={handleSingularSign}
+                    value={singularSign + ""}
+                    onChange={(item: { value: string}) => {
+                      setSingularSign(parseFloat(item.value));
+                    }}
                   />
                 </View>
                 <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
@@ -497,7 +629,7 @@ export default function TransactionsScreen() {
               </Text>
               <View style={{flexDirection: 'row', marginBottom: 20}}>
                 <View style={{flexDirection: 'column', marginHorizontal: 10}}>
-                <Text style={[styles.modalTitle, {fontSize: 12}]}>Date: </Text>
+                <Text style={[styles.modalTitle, {fontSize: 12}]}>Date </Text>
                   <TextInput
                     style={[styles.textBox, {width: 60, height: 50}]}
                     placeholder="Date"
@@ -508,7 +640,7 @@ export default function TransactionsScreen() {
                   />
                 </View>
                 <View style={{flexDirection: 'column', marginHorizontal: 10}}>
-                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Month: </Text>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Month </Text>
                   <Dropdown
                     style={[styles.textBox, {height: 50, width: 150}]}
                     placeholderStyle={{color: '#3c5a80'}}
@@ -519,13 +651,13 @@ export default function TransactionsScreen() {
                     valueField="value"
                     placeholder="Select Month"
                     value={singularMonth}
-                    onChange={(item: { value: React.SetStateAction<null>; }) => {
+                    onChange={(item: { value: string}) => {
                       setSingularMonth(item.value);
                     }}
                   />
                 </View>
                   <View style={{flexDirection: 'column', marginHorizontal: 10}}>
-                    <Text style={[styles.modalTitle, {fontSize: 12}]}>Year: </Text>
+                    <Text style={[styles.modalTitle, {fontSize: 12}]}>Year </Text>
                     <TextInput
                       style={[styles.textBox, {width: 100, height: 50}]}
                       placeholder="Year"
@@ -540,7 +672,7 @@ export default function TransactionsScreen() {
                 Description
               </Text>
               <TextInput
-                style={[styles.textBox, {width: 300, height: 200, marginBottom: 20}]}
+                style={[styles.textBox, {width: 300, height: 150, marginBottom: 20}]}
                 placeholder="Description"
                 placeholderTextColor='#3c5a80'
                 multiline={true}
@@ -549,14 +681,15 @@ export default function TransactionsScreen() {
               />
             </View>
             <View style={styles.modalBottom}>
-              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularModal}>
+              {/* <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularCreationModal}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
                   </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity style={styles.closeButton} onPress={handleSingularAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text><Text style={styles.closeButtonText}>Add</Text>
+                  {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.closeButtonText}>Add</Text>
                   </View>
               </TouchableOpacity>
             </View>
@@ -567,11 +700,16 @@ export default function TransactionsScreen() {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={periodicModal}
-        onRequestClose={togglePeriodicModal}
+        visible={periodicCreationModal}
+        onRequestClose={togglePeriodicCreationModal}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
             <View style={styles.modalBody}>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Icon
@@ -611,8 +749,10 @@ export default function TransactionsScreen() {
                     labelField="label"
                     valueField="value"
                     placeholder="Select"
-                    value={periodicSign}
-                    onChange={handlePeriodicSign}
+                    value={periodicSign + ""}
+                    onChange={(item: { value: string}) => {
+                      setSingularSign(parseFloat(item.value));
+                    }}
                   />
                 </View>
                 <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
@@ -657,7 +797,7 @@ export default function TransactionsScreen() {
                   valueField="value"
                   placeholder="Select Period"
                   value={periodicPeriod}
-                  onChange={(item: { value: React.SetStateAction<null>; }) => {
+                  onChange={(item: { value: string }) => {
                     setPeriodicPeriod(item.value);
                   }}
                 />
@@ -666,7 +806,7 @@ export default function TransactionsScreen() {
                 Description
               </Text>
               <TextInput
-                style={[styles.textBox, {width: 300, height: 200, marginBottom: 20}]}
+                style={[styles.textBox, {width: 300, height: 150, marginBottom: 20}]}
                 placeholder="Description"
                 placeholderTextColor='#3c5a80'
                 multiline={true}
@@ -675,14 +815,327 @@ export default function TransactionsScreen() {
               />
             </View>
             <View style={styles.modalBottom}>
-              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicModal}>
+              {/* <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
                   </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity style={styles.closeButton} onPress={handlePeriodicAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text><Text style={styles.closeButtonText}>Add</Text>
+                  {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.closeButtonText}>Add</Text>
+                  </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={singularEditModal}
+        onRequestClose={toggleSingularEditModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setSingularEdit(!singularEdit)}>
+                <Text style={styles.editButtonText}>{singularEdit ? "Stop Editing" : "Edit"}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularEditModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Icon
+              </Text>
+              <View style={{marginBottom: 20}}>
+                  {/* <EmojiSelector onEmojiSelected={handleSingularIcon}/> */}
+                  <TouchableOpacity style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsSingularEmojiOpen(true)}>
+                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{singularIcon}</Text>
+                  </TouchableOpacity>
+                  <EmojiPicker 
+                    onEmojiSelected={handleSingularIcon}
+                    open={isSingularEmojiOpen && singularEdit}
+                    onClose={() => setIsSingularEmojiOpen(false)}
+                  />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Title
+              </Text>
+              <TextInput
+                style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 300, height: 50, marginBottom: 20}]}
+                placeholder="Title"
+                placeholderTextColor='#3c5a80'
+                value={singularTitle}
+                onChangeText={handleSingularTitle}
+                readOnly={!singularEdit}
+              />
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Transaction
+              </Text>
+              <View style={{flexDirection: 'row', alignContent: 'center'}}>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Classify Transaction</Text>
+                  <Dropdown
+                    style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={gainOrLoss}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={singularSign + ""}
+                    onChange={(item: { value: string}) => {
+                      setSingularSign(parseFloat(item.value));
+                    }}
+                    disable={!singularEdit}
+                  />
+                </View>
+                <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Amount</Text>
+                  <TextInput
+                    style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 175, height: 50, marginBottom: 20}]}
+                    placeholder="X.XX"
+                    placeholderTextColor='#3c5a80'
+                    value={singularAmount}
+                    onChangeText={handleSingularAmount}
+                    keyboardType="numeric"
+                    readOnly={!singularEdit}
+                  />
+                </View>
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Date of Transaction
+              </Text>
+              <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                <Text style={[styles.modalTitle, {fontSize: 12}]}>Date </Text>
+                  <TextInput
+                    style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 60, height: 50}]}
+                    placeholder="Date"
+                    placeholderTextColor='#3c5a80'
+                    value={singularDay}
+                    onChangeText={handleSingularDay}
+                    keyboardType="numeric"
+                    readOnly={!singularEdit}
+                  />
+                </View>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Month </Text>
+                  <Dropdown
+                    style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {height: 50, width: 150}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={months}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select Month"
+                    value={singularMonth}
+                    onChange={(item: { value: string}) => {
+                      setSingularMonth(item.value);
+                    }}
+                    disable={!singularEdit}
+                  />
+                </View>
+                  <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                    <Text style={[styles.modalTitle, {fontSize: 12}]}>Year </Text>
+                    <TextInput
+                      style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 100, height: 50}]}
+                      placeholder="Year"
+                      placeholderTextColor='#3c5a80'
+                      value={singularYear}
+                      onChangeText={handleSingularYear}
+                      keyboardType="numeric"
+                      readOnly={!singularEdit}
+                    />
+                  </View>
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Description
+              </Text>
+              <TextInput
+                style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {width: 300, height: 150, marginBottom: 20}]}
+                placeholder="Description"
+                placeholderTextColor='#3c5a80'
+                multiline={true}
+                value={singularDescription}
+                onChangeText={handleSingularDescription}
+                readOnly={!singularEdit}
+              />
+            </View>
+            <View style={styles.modalBottom}>
+              <TouchableOpacity style={styles.closeButton} onPress={handleSingularSave}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.closeButtonText}>Save</Text>
+                  </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={handleSingularDelete}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Delete</Text>
+                  </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={periodicEditModal}
+        onRequestClose={togglePeriodicEditModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.editButton} onPress={() => setPeriodicEdit(!periodicEdit)}>
+                <Text style={styles.editButtonText}>{periodicEdit ? "Stop Editing" : "Edit"}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicEditModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.modalBody}>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Icon
+              </Text>
+              <View style={{marginBottom: 20}}>
+                  <TouchableOpacity style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 50, height:50, justifyContent: 'center', alignItems: 'center'}]} onPress={() => setIsPeriodicEmojiOpen(true)}>
+                    <Text style={{fontSize: 25, lineHeight: 50, includeFontPadding: false, marginTop: -3, marginLeft: -2}}>{periodicIcon}</Text>
+                  </TouchableOpacity>
+                  <EmojiPicker 
+                    onEmojiSelected={handlePeriodicIcon}
+                    open={isPeriodicEmojiOpen && periodicEdit}
+                    onClose={() => setIsPeriodicEmojiOpen(false)}
+                  />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Title
+              </Text>
+              <TextInput
+                style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 300, height: 50, marginBottom: 20}]}
+                placeholder="Title"
+                placeholderTextColor='#3c5a80'
+                value={periodicTitle}
+                onChangeText={handlePeriodicTitle}
+                readOnly={!periodicEdit}
+              />
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Transaction
+              </Text>
+              <View style={{flexDirection: 'row', alignContent: 'center'}}>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Classify Transaction</Text>
+                  <Dropdown
+                    style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={gainOrLoss}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={periodicSign + ""}
+                    onChange={(item: { value: string}) => {
+                      setSingularSign(parseFloat(item.value));
+                    }}
+                    disable={!periodicEdit}
+                  />
+                </View>
+                <Text style={{fontSize: 20, color: '#fff', textAlign: 'center', marginLeft: 10, marginTop: 30, marginRight: -5}}>$</Text>
+                <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Amount</Text>
+                  <TextInput
+                    style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 175, height: 50, marginBottom: 20}]}
+                    placeholder="X.XX"
+                    placeholderTextColor='#3c5a80'
+                    value={periodicAmount}
+                    onChangeText={handlePeriodicAmount}
+                    keyboardType="numeric"
+                    readOnly={!periodicEdit}
+                  />
+                </View>
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Frequency of Transaction
+              </Text>
+              <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <TextInput
+                  style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 60, height: 50, marginRight: 10}]}
+                  placeholderTextColor='#3c5a80'
+                  value={periodicTimes}
+                  onChangeText={handlePeriodicTimes}
+                  keyboardType="numeric"
+                  readOnly={!periodicEdit}
+                />
+                <Text style={{color: '#fff', fontSize: 14, textAlignVertical: 'center'}}>times per</Text>
+                <TextInput
+                  style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 60, height: 50, marginLeft: 10}]}
+                  placeholderTextColor='#3c5a80'
+                  value={periodicNumOfPeriods + ""}
+                  onChangeText={handlePeriodicNumOfPeriods}
+                  keyboardType="numeric"
+                  readOnly={!periodicEdit}
+                />
+                <Dropdown
+                  style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 120, height: 50, marginLeft: 5}]}
+                  placeholderStyle={{color: '#3c5a80'}}
+                  selectedTextStyle={{color: '#fff'}}
+                  data={periodChoices}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Period"
+                  value={periodicPeriod}
+                  onChange={(item: { value: string }) => {
+                    setPeriodicPeriod(item.value);
+                  }}
+                  disable={!periodicEdit}
+                />
+              </View>
+              <Text style={[styles.modalTitle, {fontSize: 16}]}>
+                Description
+              </Text>
+              <TextInput
+                style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {width: 300, height: 150, marginBottom: 20}]}
+                placeholder="Description"
+                placeholderTextColor='#3c5a80'
+                multiline={true}
+                value={periodicDescription}
+                onChangeText={handlePeriodicDescription}
+                readOnly={!periodicEdit}
+              />
+              {!periodicEdit && 
+                <View style={{justifyContent: 'center', alignItems: 'center', flexDirection: 'row'}}>
+                  <Text style={[styles.modalTitle, {fontSize: 16}]}>Next Occurrence: </Text>
+                  <Text style={{color: '#fff', textAlign: 'center', textAlignVertical: 'center', marginBottom: 2.5}}>{determineNextDueDate(periodicPeriod, periodicNumOfPeriods, new Date()).toISOString().split('T')[0]}</Text>
+                </View>
+              }
+            </View>
+            <View style={styles.modalBottom}>
+              {/* <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
+                  </View>
+              </TouchableOpacity> */}
+              <TouchableOpacity style={styles.closeButton} onPress={handlePeriodicSave}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.closeButtonText}>Save</Text>
+                  </View>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.cancelButton} onPress={handlePeriodicDelete}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Delete</Text>
                   </View>
               </TouchableOpacity>
             </View>
@@ -732,6 +1185,15 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 
+  uneditedTextBox: {
+    borderWidth: 0,
+    borderColor: "#3c5a80",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    // backgroundColor: '#2b415c',
+    textAlign: 'center',
+    color: '#fff',
+  },
   textBox: {
     borderWidth: 1,
     borderColor: "#3c5a80",
@@ -920,14 +1382,21 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: '#fff',
   },
+  modalTop: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: -75,
+    width: '100%',
+  },
   modalBody: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: -50,
   },
   modalBottom:{
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignContent: 'center',
     width: '100%',
@@ -956,6 +1425,20 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#ab0000',
+    fontSize: 20,
+  },
+  editButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+    borderColor: '#3c5a80',
+    borderWidth: 2,
+    paddingTop: 5,
+    paddingBottom: 5,
+    paddingLeft: 10,
+    paddingRight: 10,
+    borderRadius: 5,
+  },
+  editButtonText: {
+    color: '#fff',
     fontSize: 20,
   }
 });
