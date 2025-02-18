@@ -64,7 +64,7 @@ export default function TabLayout() {
                 source={require('@/assets/images/icon.png')}
                 style={styles.logo}
               />
-              <Text style={styles.headerText}>App Name</Text>
+              <Text style={styles.headerText}>Financ</Text>
             </View>
           ),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="coloncurrencysign.circle" color={color} library="fontAwesome5"/>,
@@ -80,13 +80,13 @@ export default function TabLayout() {
                 source={require('@/assets/images/icon.png')}
                 style={styles.logo}
               />
-              <Text style={styles.headerText}>App Name</Text>
+              <Text style={styles.headerText}>Financ</Text>
             </View>
           ),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} library="fontAwesome5"/>,
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="more"
         options={{
           title: 'More',
@@ -96,23 +96,23 @@ export default function TabLayout() {
                 source={require('@/assets/images/icon.png')}
                 style={styles.logo}
               />
-              <Text style={styles.headerText}>App Name</Text>
+              <Text style={styles.headerText}>Financ</Text>
             </View>
           ),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="line.horizontal.3" color={color} library="material"/>,
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="chart"
         options={{
-          title: 'Charts3',
+          title: 'Charts',
           header: () => (
             <View style={styles.headerContainer}>
               <Image
                 source={require('@/assets/images/icon.png')}
                 style={styles.logo}
               />
-              <Text style={styles.headerText}>App Name</Text>
+              <Text style={styles.headerText}>Financ</Text>
             </View>
           ),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="line.horizontal.3" color={color} library="material"/>,

@@ -1,17 +1,44 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { View, Text, TextInput, FlatList, TouchableOpacity, Switch, StyleSheet, Modal, ScrollView } from "react-native";
-import { List, IconButton } from 'react-native-paper';
-// import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { List, IconButton, Button } from 'react-native-paper';
 import { Picker } from "@react-native-picker/picker";
 import { Dropdown } from 'react-native-element-dropdown';
-// import EmojiSelector, { Categories } from 'react-native-emoji-selector';
-// import EmojiPicker, {emojiFromUtf16} from 'rn-emoji-picker';
-// import {emojis} from "rn-emoji-picker/dist/data";
-// import { Emoji } from "rn-emoji-picker/dist/interfaces";
 import EmojiPicker, { EmojiType } from 'rn-emoji-keyboard';
-import { dropTransactionTable, setupDatabase, insertTransaction, insertTransactionsAsArray } from "@/app/database";
+import ModalSelector from 'react-native-modal-selector';
+import { dropTransactionTable, setupDatabase, insertTransaction, insertTransactionsAsArray, dumpArrayToTransaction, fetchTransactions,searchTransactions,
+  insertCategories, createTableCategories, fetchCategories, insertIfCategoriesEmpty,
+  createTablePeriodic, insertPeriodicTransactionsAsArray, insertPeriodicTransaction, insertIfPeriodicEmpty } from "@/app/database";
+//import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 export default function TransactionsScreen() {
+
+
+  /** array singular stores real time singular transactions **/
+  const [singular, setSingular] = useState([
+    { id: "1", category: "1", icon: "🍚", title: "Eating Out", date: "2024-12-09", amount: "-15", description: ""},
+    { id: "2", category: "2", icon: "👚", title: "Bought Clothes", date: "2024-12-07", amount: "-30", description: ""},
+    { id: "3", category: "5", icon: "🏥", title: "Hospital Bill", date: "2024-12-06", amount: "-40", description: ""},
+    { id: "4", category: "4", icon: "💸", title: "Got Bonus", date: "2024-12-06", amount: "500", description: ""},
+  ]);
+
+  /** array singular stores real time singular transactions **/
+  const [categories, setCategories] = useState([
+    { id: "1", icon: "🍚", title: "Eating out"},
+    { id: "2", icon: "👚", title: "Clothes"},
+    { id: "3", icon: "💸", title: "Groceries"},
+    { id: "4", icon: "🍚", title: "Salary"},
+    { id: "5", icon: "👚", title: "Rent"},
+    { id: "6", icon: "💸", title: "Utility"},
+    { id: "7", icon: "💸", title: "Subscription"},
+  ]);
+
+  const [periodic, setPeriodic] = useState([
+    { id: "1", category: "4", icon: "💼", title: "Job", times: "1", numOfPeriods: "1", frequency: "week(s)", amount: "500", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 7))},
+    { id: "2", category: "4", icon: "💸", title: "Mow Lawns", times: "1", numOfPeriods: "1", frequency: "day(s)", amount: "15", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 1))},
+    { id: "3", category: "5", icon: "🏠", title: "Rent", times: "1", numOfPeriods: "1", frequency: "month(s)", amount: "-1500", description: "", nextDueDate: new Date(new Date().setMonth(new Date().getMonth() + 1))}, 
+    { id: "4", category: "7", icon: "📰", title: "NYT Subscription", times: "1", numOfPeriods: "4", frequency: "week(s)", amount: "-25", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 28))},
+  ])
+
   function Balance(){
     let sum = 0;
     for (let item of singular){
@@ -20,6 +47,16 @@ export default function TransactionsScreen() {
     return sum;
   }
   
+  const categoryValue = [
+    {label: 'Eating out', value: '1'},
+    {label: 'Clothes', value: '2'},
+    {label: 'Groceries', value: '3'},
+    {label: 'Salary', value: '4'},
+    {label: 'Rent', value: '5'},
+    {label: 'Utility', value: '6'},
+    {label: 'Subscription', value: '7'}
+  ]
+
   const gainOrLoss = [
     {label: 'Gain', value: '1'},
     {label: 'Loss', value: '-1'}
@@ -53,8 +90,12 @@ export default function TransactionsScreen() {
     setIsNewTransactionMenuOpen((prev) => !prev);
   };
 
+
+  
+
   type SingularTransactionEntry = {
     id: string;
+    category: string;
     icon: string;
     title: string;
     date: string;
@@ -62,41 +103,79 @@ export default function TransactionsScreen() {
     description: string;
   };
   
-  const [singular, setSingular] = useState([
-    { id: "1", icon: "🍚", title: "Ordered Food", date: "2024-12-09", amount: "-15", description: ""},
-    { id: "2", icon: "👚", title: "Bought Clothes", date: "2024-12-07", amount: "-30", description: ""},
-    { id: "3", icon: "💸", title: "Found Money on Ground", date: "2024-12-06", amount: "5", description: ""},
-    { id: "4", icon: "💸", title: "idk at this point", date: "2024-12-06", amount: "5", description: ""},
-  ]);
-
-  /*CREATE TABLE IF NOT EXISTS transaction (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    amount REAL NOT NULL,
-    date TEXT NOT NULL,
-    periodic BOOLEAN NOT NULL,
-    frequency TEXT
-);
-*/
-
-  const addRow = () => {
-    const newRow = {
+  const createDefaultSingularRow = () => {
+    return {
       id: Date.now().toString(),
+      category: "1",
       icon: "💸",
       title: "New Item",
       date: "YYYY-MM-DD",
       amount: "0.00",
       description: "",
     };
-    setSingular([...singular, newRow]);
+  
   };
 
-  const transactionsTable = [
+  const loadTransactions = async () => {
+    const data = await fetchTransactions();
+    if(data.length > 0)
+    {
+      console.log("data length > 0, load table");
+      setSingular(data);
+    }
+    else
+    {
+      console.log("data length = 0, keep the default");
+    }
+  };
+
+  /** search in transactions table */
+
+  const [selectedColumn, setSelectedColumn] = useState("title"); // Default column
+  const [searchValue, setSearchValue] = useState("");
+  const [results, setResults] = useState(singular);
+
+  // Define the table columns
+  const columns = [
+    { key: "id", label: "ID" },
+    { key: "category", label: "Category" },
+    { key: "icon", label: "Icon" },
+    { key: "title", label: "Title" },
+    { key: "date", label: "Date" },
+    { key: "amount", label: "Amount" },
+    { key: "description", label: "Description" },
+  ];
+
+  const handleSearch = async () => {
+    const data: SingularTransactionEntry[] = await searchTransactions(selectedColumn, searchValue);
+    setResults(data); 
+  };
+
+
+ 
+      
+  
+
+useEffect(() => {
+  console.log("!!!!!!!starting to refresh transactions page");
+  createTableCategories(); // Ensure table is created
+  
+  insertIfCategoriesEmpty(categories); // Fetch existing categories
+
+  createTablePeriodic();
+  insertPeriodicTransactionsAsArray(periodic);
+
+  loadTransactions();
+}, []);
+
+
+
+  
+  /*const transactionsTable = [
     { category: 1, title: "Groceries", amount: 50.75, date: "2025-02-13", periodic: false, frequency: "" },
     { category: 2, title: "Netflix", amount: 15.99, date: "2025-02-14", periodic: true, frequency: "monthly" },
     { category: 3, title: "Salary", amount: 1200, date: "2025-02-15", periodic: false, frequency: "" },
-  ];
+  ];*/
 
   type TransactionEntry = {
     id: string;
@@ -104,13 +183,12 @@ export default function TransactionsScreen() {
     title: string;
     date: string;
     amount: string;
-    periodic: boolean;
-    frequency: string;
-  };
-
+   };
+  
   const createSingularRow = () => {
     return {
       id: singularID,
+      category: singularCategory,
       icon: singularIcon,
       title: singularTitle,
       date: `${singularYear}-${singularMonth.padStart(2, '0')}-${singularDay.padStart(2, '0')}`,
@@ -118,11 +196,13 @@ export default function TransactionsScreen() {
       description: singularDescription,
     };
   }
-  
+
  const addSingular = () => {
     setSingularID((new Date()).toISOString());
     const newRow = createSingularRow();
+    // console.log("newRow.category is: " + newRow.category);
     setSingular([...singular, newRow].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    dumpArrayToTransaction(singular);
   }
 
   const editSingular = () => {
@@ -157,6 +237,7 @@ export default function TransactionsScreen() {
   const toggleSingularCreationModal = () => {
     setSingularCreationModal(!singularCreationModal);
     setSingularIcon('');
+    setSingularCategory('');
     setSingularTitle('');
     setSingularSign(1);
     setSingularAmount('');
@@ -172,6 +253,7 @@ export default function TransactionsScreen() {
     setSingularEditModal(!singularEditModal);
     setSingularID((new Date()).toISOString());
     setSingularIcon('');
+    setSingularCategory('');
     setSingularTitle('');
     setSingularSign(1);
     setSingularAmount('');
@@ -185,6 +267,8 @@ export default function TransactionsScreen() {
     toggleSingularEditModal();
     setSingularEdit(false);
     setSingularID(item.id);
+    console.log("item.category: " + item.category);
+    setSingularCategory(item.category);
     setSingularIcon(item.icon);
     setSingularTitle(item.title);
     setSingularSign(parseFloat(item.amount) >= 0 ? 1 : -1);
@@ -198,8 +282,9 @@ export default function TransactionsScreen() {
   const [singularEdit, setSingularEdit] = useState(false);
 
   const [isSingularEmojiOpen, setIsSingularEmojiOpen] = useState(false);
-
+  
   const [singularID, setSingularID] = useState('');
+  const [singularCategory, setSingularCategory] = useState('');
   const [singularIcon, setSingularIcon] = useState('');
   const [singularTitle, setSingularTitle] = useState('');
   const [singularSign, setSingularSign] = useState(1);
@@ -219,9 +304,6 @@ export default function TransactionsScreen() {
     setSingularTitle(title);
   }
 
-  // const handleSingularSign = (sign : any) => {
-  //   setSingularSign(sign.value);
-  // }
 
   const handleSingularAmount = (amount: string) => {
     setSingularAmount(amount);
@@ -254,9 +336,9 @@ export default function TransactionsScreen() {
             style={styles.singularDate}
           >{item.date}</Text>
       </View>
-      <View style={[styles.transactionInfoContainer, {width: 50, paddingLeft: 15}]}>
+      <View style={[styles.transactionInfoContainer, {width: 60, paddingLeft: 15}]}>
         <Text
-          style={[styles.singularAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
+          style={[styles.singularAmount, { color: item.amount && String(item.amount).startsWith('-') ? '#FF0000' : '#00FF11' }]}
         >{item.amount}</Text>
       </View>
       {/* <Switch
@@ -269,6 +351,7 @@ export default function TransactionsScreen() {
 
   type PeriodicTransactionEntry = {
     id: string;
+    category: string;
     icon: string;
     title: string;
     times: string;
@@ -279,16 +362,10 @@ export default function TransactionsScreen() {
     nextDueDate: Date;
   };
 
-  const [periodic, setPeriodic] = useState([
-    { id: "1", icon: "💼", title: "Job", times: "1", numOfPeriods: "1", frequency: "week(s)", amount: "500", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 7))},
-    { id: "2", icon: "💸", title: "Mow Lawns", times: "1", numOfPeriods: "1", frequency: "day(s)", amount: "15", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 1))},
-    { id: "3", icon: "🏠", title: "Rent", times: "1", numOfPeriods: "1", frequency: "month(s)", amount: "-1500", description: "", nextDueDate: new Date(new Date().setMonth(new Date().getMonth() + 1))}, 
-    { id: "4", icon: "📰", title: "NYT Subscription", times: "1", numOfPeriods: "4", frequency: "week(s)", amount: "-25", description: "", nextDueDate: new Date(new Date().setDate(new Date().getDate() + 28))},
-  ])
-
   const createPeriodicRow = () => {
     return {
       id: periodicID,
+      category: periodicCategory,
       icon: periodicIcon,
       title: periodicTitle,
       times: periodicTimes,
@@ -338,6 +415,7 @@ export default function TransactionsScreen() {
   const togglePeriodicCreationModal = () => {
     setPeriodicCreationModal(!periodicCreationModal);
     setPeriodicIcon('');
+    setPeriodicCategory('');
     setPeriodicTitle('');
     setPeriodicSign(1);
     setPeriodicAmount('');
@@ -353,6 +431,7 @@ export default function TransactionsScreen() {
     setPeriodicEditModal(!periodicEditModal);
     setPeriodicID((new Date()).toISOString());
     setPeriodicIcon('');
+    setPeriodicCategory('');
     setPeriodicTitle('');
     setPeriodicSign(1);
     setPeriodicAmount('');
@@ -367,6 +446,7 @@ export default function TransactionsScreen() {
     setPeriodicEdit(false);
     setPeriodicID(item.id);
     setPeriodicIcon(item.icon);
+    setPeriodicCategory(item.category);
     setPeriodicTitle(item.title);
     setPeriodicSign(parseFloat(item.amount) >= 0 ? 1 : -1);
     setPeriodicAmount(Math.abs(parseFloat(item.amount)).toString());
@@ -381,6 +461,7 @@ export default function TransactionsScreen() {
   const [isPeriodicEmojiOpen, setIsPeriodicEmojiOpen] = useState(false);
 
   const [periodicID, setPeriodicID] = useState('');
+  const [periodicCategory, setPeriodicCategory] = useState('');
   const [periodicIcon, setPeriodicIcon] = useState('');
   const [periodicTitle, setPeriodicTitle] = useState('');
   const [periodicSign, setPeriodicSign] = useState(1);
@@ -390,6 +471,10 @@ export default function TransactionsScreen() {
   const [periodicPeriod, setPeriodicPeriod] = useState('');
   const [periodicDescription, setPeriodicDescription] = useState('');
 
+  const handlePeriodicCategory = (category: string) => {
+    setPeriodicCategory(category);
+  }
+  
   const handlePeriodicIcon = (emojiObject: EmojiType) => {
     setPeriodicIcon(emojiObject.emoji);
   }
@@ -435,7 +520,6 @@ export default function TransactionsScreen() {
   function processPeriodicTransactions(transactions: PeriodicTransactionEntry[]) {
     const now = new Date();
     let nowString = now.toISOString();
-    console.log(nowString);
     const newTransactions: SingularTransactionEntry[] = [];
     const idTracker: {date: string, count: number}[] = [];
 
@@ -455,6 +539,7 @@ export default function TransactionsScreen() {
           trackerEntry.count++;
           newTransactions.push({
             id: `${nextDueString} [${trackerEntry.count}]`,
+            category: transaction.category,
             icon: transaction.icon,
             title: `${transaction.title} [${trackerEntry.count}]`,
             date: nextDue.toISOString().split("T")[0],
@@ -475,6 +560,7 @@ export default function TransactionsScreen() {
 
     if(newTransactions.length > 0) {
       setSingular(prev => [...prev, ...newTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      dumpArrayToTransaction(singular);
     }
   }, 24 * 60 * 60 * 1000);
 
@@ -486,7 +572,7 @@ export default function TransactionsScreen() {
           style={[styles.periodicTitle]}
         >{item.title}</Text>
       <Text
-        style={[styles.periodicAmount, { color: item.amount.startsWith('-') ? '#FF0000' : '#00FF11' }]}
+        style={[styles.periodicAmount, { color: item.amount && String(item.amount).startsWith('-') ? '#FF0000' : '#00FF11' }]}
       >{item.amount}</Text>
       <Text
         style={styles.periodicFrequency}
@@ -525,7 +611,66 @@ export default function TransactionsScreen() {
         renderItem={renderSingularItem} 
         keyExtractor={(item) => item.id} 
         scrollEnabled={false}/>
+
+
+
+
+         {/* Dropdown for selecting column using ModalSelector */}
+      <Text style={{ color:  "white", fontSize: 16}}>Select Column:</Text>
+      <ModalSelector
+        data={columns}
+        initValue="Select Column"
+        onChange={(option) => setSelectedColumn(option.key)}
+        style={{ marginBottom: 10, backgroundColor:  "white"}}
+      >
+        <TouchableOpacity style={{ padding: 10, borderWidth: 1, borderColor: "#ccc" }}>
+          <Text>{columns.find((col) => col.key === selectedColumn)?.label || "Select Column"}</Text>
+        </TouchableOpacity>
+      </ModalSelector>
+
+      {/* Text Input for search value */}
+      <Text style={{ color:  "white", fontSize: 16}}>Enter Value:</Text>
+      <TextInput 
+        placeholder="Search..."
+        value={searchValue}
+        onChangeText={setSearchValue}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          padding: 10,
+          marginBottom: 10,
+          backgroundColor:  "white",
+        }}
+      />
+
+      {/* Search Button */}
+      <Button style={{ backgroundColor:  "white"}} onPress={handleSearch} >Search</Button>
+ 
+      {/* Display Search Results */}
+      <FlatList
+        data={results}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={{ padding: 10, borderBottomWidth: 1, borderColor: '#fff'}}>
+            <Text style={{color:'#fff', fontSize: 14}}>ID: {item.id}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Category: {item.category}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Icon: {item.icon}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Title: {item.title}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Date: {item.date}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Amount: ${item.amount}</Text>
+            <Text style={{color:'#fff', fontSize: 14}}>Description: {item.description || "N/A"}</Text>
+          </View>
+        )}
+        scrollEnabled={false}
+      />
+
+
+
+  
+
+
       </ScrollView>
+
 
       <TouchableOpacity style={styles.floatingButton} onPress={toggleNewTransactionMenu}>
         <Text style={styles.buttonText}>+</Text>
@@ -588,6 +733,23 @@ export default function TransactionsScreen() {
                 value={singularTitle}
                 onChangeText={handleSingularTitle}
               />
+              <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Category</Text>
+                  <Dropdown
+                    style={[styles.textBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={categoryValue}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={singularCategory}
+                    onChange={(item: { value: string}) => {
+                      setSingularCategory(item.value);
+                    }}
+                  />
+                </View>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Transaction
               </Text>
@@ -731,6 +893,24 @@ export default function TransactionsScreen() {
                 value={periodicTitle}
                 onChangeText={handlePeriodicTitle}
               />
+
+              <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Category</Text>
+                  <Dropdown
+                    style={[styles.textBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={categoryValue}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={periodicCategory}
+                    onChange={(item: { value: string}) => {
+                      setPeriodicCategory(item.value);
+                    }}
+                  />
+              </View>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Transaction
               </Text>
@@ -874,6 +1054,24 @@ export default function TransactionsScreen() {
                 onChangeText={handleSingularTitle}
                 readOnly={!singularEdit}
               />
+              <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Category</Text>
+                  <Dropdown
+                    style={[singularEdit ? styles.textBox : styles.uneditedTextBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={categoryValue}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={singularCategory}
+                    onChange={(item: { value: string}) => {
+                      setSingularCategory(item.value);
+                    }}
+                    disable={!singularEdit}
+                  />
+                </View>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Transaction
               </Text>
@@ -1029,6 +1227,24 @@ export default function TransactionsScreen() {
                 onChangeText={handlePeriodicTitle}
                 readOnly={!periodicEdit}
               />
+              <View style={{flexDirection: 'column', marginHorizontal: 10}}>
+                  <Text style={[styles.modalTitle, {fontSize: 12}]}>Category</Text>
+                  <Dropdown
+                    style={[periodicEdit ? styles.textBox : styles.uneditedTextBox, {height: 50, width: 125}]}
+                    placeholderStyle={{color: '#3c5a80'}}
+                    selectedTextStyle={{color: '#fff'}}
+                    data={categoryValue}
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Select"
+                    value={periodicCategory}
+                    onChange={(item: { value: string}) => {
+                      setPeriodicCategory(item.value);
+                    }}
+                    disable={!singularEdit}
+                  />
+              </View>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
                 Transaction
               </Text>
@@ -1138,7 +1354,7 @@ export default function TransactionsScreen() {
     </View>
 
 
-     
+
   );
 }
 
@@ -1264,6 +1480,12 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   periodicFrequency: {
+    fontSize: 14,
+    color: "#fff",
+    textAlign: 'center',
+    textAlignVertical: 'center',
+  },
+  periodicCategory: {
     fontSize: 14,
     color: "#fff",
     textAlign: 'center',

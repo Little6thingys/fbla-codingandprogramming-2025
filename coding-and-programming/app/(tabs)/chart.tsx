@@ -1,29 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, ScrollView, TouchableOpacity, Image, StyleSheet, Platform } from 'react-native';
 import { PieChart, BarChart } from "react-native-chart-kit";
 import ModalSelector from 'react-native-modal-selector';
-import { dropTransactionTable, setupDatabase, insertTransactionsAsArray, fetchExpenseTransactionsByCategory, fetchIncomeTransactionsByCategory, getSummary } from "../database";
-
-
-
-///
-
-import { Image, StyleSheet, Platform } from 'react-native';
-
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-
-
-import { Button } from 'react-native-paper';  // ✅ Updated import
-import { Picker } from '@react-native-picker/picker';
+import { dropTransactionTable, setupDatabase, dumpArrayToTransaction, insertTransactionsAsArray, deleteAllTransactions, fetchExpenseTransactionsByCategory, fetchIncomeTransactionsByCategory, getSummary, 
+  fetchTransactions, fetchCategories } from "../database";
+import { Button } from 'react-native-paper';  
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as SQLite from 'expo-sqlite';
+import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 
 
 const styles = StyleSheet.create({
+  resetButton: {
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: "#003D5B",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  resetButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "normal",
+  },
   backgroundContainer: {
     flex: 1,
     backgroundColor: '#003D5B',
@@ -44,9 +46,9 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
   },
-  container: {
+    container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#003D5B',
     padding: 20,
   },
 
@@ -151,6 +153,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
+    color: '#fff',
   },
 });
 
@@ -180,18 +183,27 @@ export default function ChartScreen() {
 
   ];*/
 
-  const transactionsTable = [
-    { category: 1, title: "Groceries", amount: -1, date: "2025-02-13", periodic: false, frequency: "" },
-    { category: 2, title: "Netflix", amount: -2, date: "2025-02-14", periodic: true, frequency: "monthly" },
-    { category: 3, title: "Salary", amount: 3, date: "2025-02-15", periodic: false, frequency: "" },
-    { category: 1, title: "Groceries", amount: -4, date: "2025-01-13", periodic: false, frequency: "" },
-    { category: 2, title: "Netflix", amount: -5, date: "2025-01-14", periodic: true, frequency: "monthly" },
-    { category: 3, title: "Salary", amount: 6, date: "2025-01-15", periodic: false, frequency: "" },
+  /**const transactionsTable = [
+    { category: 1, title: "Groceries", amount: -2, date: "2025-02-13", periodic: false, frequency: "" },
+    { category: 2, title: "Netflix", amount: -4, date: "2025-02-14", periodic: true, frequency: "monthly" },
+    { category: 3, title: "Salary", amount:6, date: "2025-02-15", periodic: false, frequency: "" },
+    { category: 1, title: "Groceries", amount: -8, date: "2025-01-13", periodic: false, frequency: "" },
+    { category: 2, title: "Netflix", amount: -10, date: "2025-01-14", periodic: true, frequency: "monthly" },
+    { category: 3, title: "Salary", amount: 12, date: "2025-01-15", periodic: false, frequency: "" },
 
-   
+     ];*/
 
 
-  ];
+     /**tmptory debugging use */
+     const transactionsTable = [
+      { id: "1", category: "1", title: "Groceries", amount: "-2", date: "2025-02-13", icon:"", description:""},
+      { id: "2", category: "2", title: "Netflix", amount: "-4", date: "2025-02-14", icon:"", description:"" },
+      { id: "3", category: "3", title: "Salary", amount:"6", date: "2025-02-15", icon:"", description:"" },
+      { id: "4", category: "1", title: "Groceries", amount: "-8", date: "2025-01-13", icon:"", description:""},
+      { id: "5", category: "2", title: "Netflix", amount: "-10", date: "2025-01-14", icon:"", description:"" },
+      { id: "6", category: "3", title: "Salary", amount: "12", date: "2025-01-15", icon:"", description:"" },
+     
+       ];
 
 
   const [chartData, setChartData] = useState<ChartDataType>([]);
@@ -202,25 +214,36 @@ export default function ChartScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
+  const [categoriesTable, setCategoriesTable] = useState<any[]>([]);
+  const [singualTransactionsTable, setTransactionsTable] = useState<any[]>([]);
+
   useEffect(() => {
-    console.log("starting!");
-      // drop table if exist
-          dropTransactionTable();
-          console.log("dropTransactionTable is completed!");
-          // create table 
-          setupDatabase();
-          console.log("setupDatabase is completed!");
-          // insert into table transaction or update table transaction
-          insertTransactionsAsArray(transactionsTable);
-          console.log("insertTransactionsAsArray is completed!");
+    console.log("!!!!!!!!!!!!!starting to refresh chart page!");
+         
+     //dumpArrayToTransaction(transactionsTable); //for debugging
+          
           fetchExpensePieChartData();
           fetchIncomePieChartData();
 
          //fetchTransactions();
-         console.log("piechart is completed!");
+         //console.log("piechart is completed!");
 
          fetchBarChartData();
-         console.log("bar chart is completed!");
+         //console.log("bar chart is completed!");
+
+
+         //fetchCategories();
+         /*const loadCategories = async () => {
+          const data = await fetchCategories();
+          setCategoriesTable(data);
+        };*/
+
+        fetchTransactions();
+        //console.log("fetchTransactions is completed!");
+        const loadTransactions = async () => {
+          const data = await fetchTransactions();
+          setTransactionsTable(data);
+        };
 
         
     }, [filter, category, startDate, endDate]);
@@ -254,7 +277,28 @@ export default function ChartScreen() {
       }
     };
     
-  
+    const getRandomColor = () => {
+      let color;
+      do {
+        color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+      } while (color.toLowerCase() === "#ffffff" || parseInt(color.substring(1), 16) > 0xeeeeee); // Avoid white & near-white
+      return color;
+    };
+    
+    // Function to check if color is too light (avoiding white or very bright colors)
+    const isColorTooLight = (hexColor: string) => {
+      // Convert hex to RGB
+      const r = parseInt(hexColor.substring(1, 3), 16);
+      const g = parseInt(hexColor.substring(3, 5), 16);
+      const b = parseInt(hexColor.substring(5, 7), 16);
+      
+      // Calculate brightness (perceived luminance formula)
+      const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+      
+      return brightness > 200; // Threshold: 200+ means it's too light
+    };
+
+    
   /* fetch cheXart for expense pie chart from all the transaction group by category */
   const fetchExpensePieChartData = async () => {
     try {
@@ -263,17 +307,13 @@ export default function ChartScreen() {
       const formattedData = transactions.map((item) => ({
         name: `Category ${item.category}`,
         amount: item.total,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Generate a random color
-        legendFontColor: "#000",
+        color: getRandomColor(),
+        legendFontColor: "#fff",
         legendFontSize: 15,
       }));
-      console.log(formattedData[0].amount);
-      //console.log(formattedData[1].amount);
+     
       setExpenseTotalData(formattedData); 
-      //console.log(dataExpenseTotalTransactions[0].amount);
-      //console.log('startDate is:' + startDate.toISOString().split('T')[0]);
-      //console.log('endDate is:' + endDate.toISOString().split('T')[0]);
-      //console.log(dataExpenseTotalTransactions[1].amount);
+      
     } catch (error) {
       console.error("Error fetching expense chart data", error);
     }
@@ -288,7 +328,7 @@ export default function ChartScreen() {
         name: `Category ${item.category}`,
         amount: item.total,
         color: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Generate a random color
-        legendFontColor: "#000",
+        legendFontColor: "#fff",
         legendFontSize: 15,
       }));
   
@@ -298,6 +338,10 @@ export default function ChartScreen() {
     }
   };
   
+  const handleReset = () => {
+    deleteAllTransactions(); // Clears the array or reset to default state
+    console.log("Reset button clicked!");
+  };
 
   /*const fetchTransactions = () => {
     db.transaction((tx) => {
@@ -334,20 +378,30 @@ export default function ChartScreen() {
 */
 
   return (
-   
-   
-    <ScrollView >
+    
+    
+
+
+    <ScrollView style={styles.container}>
            
-          
-            
+
+ {/* Reset Button */}
+ <TouchableOpacity
+    style={styles.resetButton}
+    onPress={() => handleReset()} // Function to handle reset action
+  >
+    <Text style={styles.resetButtonText}>Reset</Text>
+  </TouchableOpacity>
+
+  
           {/* Filter Controls */}
           
               {/* Date Pickers */}
               <TouchableOpacity onPress={() => setShowStartPicker(true)}>
-                <Text style={{ fontWeight: 'bold' }}>Start Date: {startDate.toISOString().split('T')[0]}</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 18, color: '#fff' }}>Start Date: {startDate.toISOString().split('T')[0]}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setShowEndPicker(true)}>
-                <Text style={{ fontWeight: 'bold' }}>End Date: {endDate.toISOString().split('T')[0]}</Text>
+                <Text style={{ fontWeight: 'bold' , fontSize: 18, color: '#fff'}}>End Date: {endDate.toISOString().split('T')[0]}</Text>
               </TouchableOpacity>
       
               {showStartPicker && (
@@ -378,12 +432,12 @@ export default function ChartScreen() {
             
             {/* Category Filter */}
             
-            <Text>Selected: {category}</Text>
+            {/*<Text>Selected: {category}</Text>
             <ModalSelector
               data={categories}
               initValue="Select Category"
               onChange={(option) => setCategory(option.key)}
-            />
+            />*/}
          
       
       
@@ -392,7 +446,7 @@ export default function ChartScreen() {
               <Button
                 mode={filter === 'monthly' ? 'contained' : 'outlined'}
                 onPress={() => setFilter('monthly')}
-                style={{ marginHorizontal: 5 }}
+                style={{ marginHorizontal: 5, marginVertical: 10 }}
               >
                 Monthly
               </Button>
@@ -408,10 +462,10 @@ export default function ChartScreen() {
           {/* Bar Chart */}
           <ScrollView horizontal>
       <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Income vs Expenses</Text>
+        <Text style={styles.chartTitle}>Income </Text> {/* later income vs expense */}
         <BarChart
           data={{
-            labels: chartData.map(item => item.label),
+            labels: chartData.map(item => item.label.toString()),
             datasets: [
               { data: chartData.map(item => item.income), color: () => '#4CAF50' }, // Green for income //4CAF50
               { data: chartData.map(item => item.expenses), color: () => '#4CAF50' } // Red for expenses //F44336
@@ -440,38 +494,42 @@ export default function ChartScreen() {
     </ScrollView>
             
       {/*Show category pie chart of expense transactions */}
-      <Text style={{ fontSize: 18, textAlign: "center", margin: 20 }}>Category Expenses</Text>
+      <Text style={{ fontSize: 18, textAlign: "center", margin: 5, color: '#fff' }}>Category Expenses</Text>
             <PieChart
               data={dataExpenseTotalTransactions}
-              width={300}
+              width={400}
               height={220}
               chartConfig={{
                 backgroundColor: "#e26a00",
                 backgroundGradientFrom: "#fb8c00",
                 backgroundGradientTo: "#ffa726",
                 color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
               }}
               accessor="amount"
               backgroundColor="transparent"
               paddingLeft="15"
+              center={[10, 0]} // Adjust centering if needed
               absolute
             />
 
             {/*Show category pie chart of income transactions */}
-            <Text style={{ fontSize: 18, textAlign: "center", margin: 20 }}>Category Income</Text>
+            <Text style={{ fontSize: 18, textAlign: "center", margin: 5, color: '#fff' }}>Category Income</Text>
             <PieChart
               data={dataIncomeTotalTransactions}
-              width={300}
+              width={400}
               height={220}
               chartConfig={{
                 backgroundColor: "#e26a00",
                 backgroundGradientFrom: "#fb8c00",
                 backgroundGradientTo: "#ffa726",
                 color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
               }}
               accessor="amount"
               backgroundColor="transparent"
               paddingLeft="15"
+              center={[10, 0]}
               absolute
             />
          
