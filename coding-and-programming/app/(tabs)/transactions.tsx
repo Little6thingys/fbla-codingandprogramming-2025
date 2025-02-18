@@ -561,9 +561,7 @@ export default function TransactionsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalTop}>
-              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularCreationModal}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              
             </View>
             <View style={styles.modalBody}>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
@@ -681,11 +679,12 @@ export default function TransactionsScreen() {
               />
             </View>
             <View style={styles.modalBottom}>
-              {/* <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularCreationModal}>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularCreationModal}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                   </View>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
               <TouchableOpacity style={styles.closeButton} onPress={handleSingularAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
@@ -706,9 +705,7 @@ export default function TransactionsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalTop}>
-              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              
             </View>
             <View style={styles.modalBody}>
               <Text style={[styles.modalTitle, {fontSize: 16}]}>
@@ -815,11 +812,12 @@ export default function TransactionsScreen() {
               />
             </View>
             <View style={styles.modalBottom}>
-              {/* <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
+              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                   </View>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
               <TouchableOpacity style={styles.closeButton} onPress={handlePeriodicAdd}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
@@ -840,11 +838,14 @@ export default function TransactionsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.cancelButton} onPress={handleSingularDelete}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Delete</Text>
+                  </View>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.editButton} onPress={() => setSingularEdit(!singularEdit)}>
                 <Text style={styles.editButtonText}>{singularEdit ? "Stop Editing" : "Edit"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularEditModal}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
@@ -970,16 +971,13 @@ export default function TransactionsScreen() {
               />
             </View>
             <View style={styles.modalBottom}>
+              <TouchableOpacity style={styles.cancelButton} onPress={toggleSingularEditModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.closeButton} onPress={handleSingularSave}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
                   <Text style={styles.closeButtonText}>Save</Text>
-                  </View>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={handleSingularDelete}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
-                  <Text style={styles.cancelButtonText}>Delete</Text>
                   </View>
               </TouchableOpacity>
             </View>
@@ -996,11 +994,14 @@ export default function TransactionsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalTop}>
+              <TouchableOpacity style={styles.cancelButton} onPress={handlePeriodicDelete}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
+                  <Text style={styles.cancelButtonText}>Delete</Text>
+                  </View>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.editButton} onPress={() => setPeriodicEdit(!periodicEdit)}>
                 <Text style={styles.editButtonText}>{periodicEdit ? "Stop Editing" : "Edit"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicEditModal}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
@@ -1121,21 +1122,13 @@ export default function TransactionsScreen() {
               }
             </View>
             <View style={styles.modalBottom}>
-              {/* <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicCreationModal}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text><Text style={styles.cancelButtonText}>Cancel</Text>
-                  </View>
-              </TouchableOpacity> */}
+              <TouchableOpacity style={styles.cancelButton} onPress={togglePeriodicEditModal}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={styles.closeButton} onPress={handlePeriodicSave}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                   {/* <Text style={{fontSize: 30, color: '#fff', paddingRight: 10}}>+</Text> */}
                   <Text style={styles.closeButtonText}>Save</Text>
-                  </View>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={handlePeriodicDelete}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  {/* <Text style={{fontSize: 30, color: '#ab0000', paddingRight: 10}}>+</Text> */}
-                  <Text style={styles.cancelButtonText}>Delete</Text>
                   </View>
               </TouchableOpacity>
             </View>
@@ -1383,7 +1376,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   modalTop: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: -75,
@@ -1396,7 +1389,7 @@ const styles = StyleSheet.create({
     marginBottom: -50,
   },
   modalBottom:{
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignContent: 'center',
     width: '100%',
