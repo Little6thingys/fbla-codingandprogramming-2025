@@ -31,7 +31,7 @@ import {
   insertPeriodicTransactionsAsArray,
   insertPeriodicTransaction,
   insertIfPeriodicEmpty,
-} from "@/app/useDatabase";
+} from "@/app/Database";
 //import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 export default function TransactionsScreen() {

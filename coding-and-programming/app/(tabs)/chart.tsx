@@ -27,7 +27,7 @@ import {
   getSummary,
   fetchTransactions,
   fetchCategories,
-} from "../useDatabase";
+} from "../Database";
 import { Button } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { opacity } from "react-native-reanimated/lib/typescript/Colors";
