@@ -185,6 +185,7 @@ useEffect(() => {
     amount: string;
    };
   
+   // creates and returns a SingularTransactionEntry using the values collected from Modals
   const createSingularRow = () => {
     return {
       id: singularID,
@@ -197,6 +198,7 @@ useEffect(() => {
     };
   }
 
+  // adds a SingularTransactionEntry to the Singular Transaction Array
  const addSingular = () => {
     setSingularID((new Date()).toISOString());
     const newRow = createSingularRow();
@@ -205,6 +207,7 @@ useEffect(() => {
     dumpArrayToTransaction(singular);
   }
 
+  // finds a transaction within the Singular Transaction array that matches the given ID and edits that transaction with the given values
   const editSingular = () => {
     setSingular((prevSingular) =>
       prevSingular.map((item) =>
@@ -213,6 +216,7 @@ useEffect(() => {
     )
   }
 
+  // finds a transaction within the Singular Transaction array that matches the given ID and deletes it from the array
   const deleteSingular = () => {
     setSingular((prevSingular) => prevSingular.filter((item) => item.id !== singularID));
   }
@@ -410,8 +414,10 @@ useEffect(() => {
     togglePeriodicEditModal();
   }
 
+  // modal used for creating a new Periodic Transaction
   const [periodicCreationModal, setPeriodicCreationModal] = useState(false);
 
+  // function used to turn on/off the PeriodicCreationModal
   const togglePeriodicCreationModal = () => {
     setPeriodicCreationModal(!periodicCreationModal);
     setPeriodicIcon('');
@@ -425,8 +431,10 @@ useEffect(() => {
     setPeriodicDescription('');
   };
 
+  // modal used for editing an already existing Periodic Transaction
   const [periodicEditModal, setPeriodicEditModal] = useState(false);
 
+  // function used to turn on/off the PeriodicEditModal
   const togglePeriodicEditModal = () => {
     setPeriodicEditModal(!periodicEditModal);
     setPeriodicID((new Date()).toISOString());
@@ -441,6 +449,7 @@ useEffect(() => {
     setPeriodicDescription('');
   };
 
+  // function used to turn on a PeriodicEditModal and initialize it to the given item's parameters
   const showPeriodicEditModal = (item: PeriodicTransactionEntry) => {
     togglePeriodicEditModal();
     setPeriodicEdit(false);

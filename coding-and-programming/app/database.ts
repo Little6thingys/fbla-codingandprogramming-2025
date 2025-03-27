@@ -3,6 +3,24 @@ import * as SQLite from "expo-sqlite";
 // Open the SQLite database
 const db = SQLite.openDatabaseSync("transactions.db");
 
+export const fetchTransactionsBalance = async (): Promise<number> => {
+  try {
+    const result = await db.getFirstAsync("SELECT SUM(amount) AS total FROM transactions;");
+
+    console.log("Query Result:", result); // Debugging step
+
+    if (result && typeof result === "object" && "total" in result) {
+      console.log("balance:" + result.total);
+      return Number(result.total )?? 0; // Ensure it always returns a number
+    } else {
+      return 0; // If result is undefined/null, return 0
+    }
+  } catch (error) {
+    console.error("Error fetching transaction balance:", error);
+    return 0; // Return 0 in case of an error
+  }
+};
+
 /* create table transactions */
 export const setupDatabase = () => {
     db.execAsync(
